@@ -1,0 +1,242 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>宠物信息 - 宠物管理平台</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .navbar-brand {
+            font-weight: bold;
+        }
+        .form-label {
+            font-weight: 500;
+        }
+        .required::after {
+            content: "*";
+            color: red;
+            margin-left: 4px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/pet-api/">
+                <i class="bi bi-heart-pulse"></i> 宠物管理平台
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/pet-api/">首页</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/pet-api/pet/list">宠物管理</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h4 class="mb-0" id="formTitle"><i class="bi bi-plus-circle"></i> 添加宠物</h4>
+            </div>
+            <div class="card-body">
+                <form id="petForm">
+                    <input type="hidden" id="petId" name="id">
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="name" class="form-label required">宠物名称</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="type" class="form-label required">宠物类型</label>
+                            <select class="form-select" id="type" name="type" required>
+                                <option value="">请选择</option>
+                                <option value="狗">狗</option>
+                                <option value="猫">猫</option>
+                                <option value="鸟">鸟</option>
+                                <option value="兔子">兔子</option>
+                                <option value="仓鼠">仓鼠</option>
+                                <option value="其他">其他</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="breed" class="form-label">品种</label>
+                            <input type="text" class="form-control" id="breed" name="breed">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="age" class="form-label">年龄（岁）</label>
+                            <input type="number" class="form-control" id="age" name="age" min="0" step="0.5">
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label for="gender" class="form-label">性别</label>
+                            <select class="form-select" id="gender" name="gender">
+                                <option value="">请选择</option>
+                                <option value="公">公</option>
+                                <option value="母">母</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="color" class="form-label">毛色</label>
+                            <input type="text" class="form-control" id="color" name="color">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="weight" class="form-label">体重（kg）</label>
+                            <input type="number" class="form-control" id="weight" name="weight" min="0" step="0.1">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="ownerName" class="form-label required">主人姓名</label>
+                            <input type="text" class="form-control" id="ownerName" name="ownerName" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="ownerPhone" class="form-label">联系电话</label>
+                            <input type="tel" class="form-control" id="ownerPhone" name="ownerPhone" pattern="[0-9]{11}">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="healthStatus" class="form-label">健康状态</label>
+                        <select class="form-select" id="healthStatus" name="healthStatus">
+                            <option value="">请选择</option>
+                            <option value="健康">健康</option>
+                            <option value="生病">生病</option>
+                            <option value="康复中">康复中</option>
+                            <option value="观察中">观察中</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">备注</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="3"></textarea>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <button type="button" class="btn btn-secondary" onclick="goBack()">
+                            <i class="bi bi-arrow-left"></i> 返回
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> 保存
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 页面加载时检查是否是编辑模式
+        document.addEventListener('DOMContentLoaded', function() {
+            const petId = getQueryParam('id');
+            if (petId) {
+                loadPetDetail(petId);
+                document.getElementById('formTitle').innerHTML = '<i class="bi bi-pencil-square"></i> 编辑宠物';
+            }
+        });
+
+        // 获取URL参数
+        function getQueryParam(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        // 加载宠物详情
+        function loadPetDetail(id) {
+            fetch(`/pet-api/pet/detail/${id}`)
+                .then(response => response.json())
+                .then(result => {
+                    if (result.code === 200 && result.data) {
+                        const pet = result.data;
+                        document.getElementById('petId').value = pet.id || '';
+                        document.getElementById('name').value = pet.name || '';
+                        document.getElementById('type').value = pet.type || '';
+                        document.getElementById('breed').value = pet.breed || '';
+                        document.getElementById('age').value = pet.age || '';
+                        document.getElementById('gender').value = pet.gender || '';
+                        document.getElementById('color').value = pet.color || '';
+                        document.getElementById('weight').value = pet.weight || '';
+                        document.getElementById('ownerName').value = pet.ownerName || '';
+                        document.getElementById('ownerPhone').value = pet.ownerPhone || '';
+                        document.getElementById('healthStatus').value = pet.healthStatus || '';
+                        document.getElementById('notes').value = pet.notes || '';
+                    } else {
+                        alert('加载宠物信息失败');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('加载宠物信息失败');
+                });
+        }
+
+        // 表单提交
+        document.getElementById('petForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const formData = {
+                id: document.getElementById('petId').value || null,
+                name: document.getElementById('name').value,
+                type: document.getElementById('type').value,
+                breed: document.getElementById('breed').value,
+                age: document.getElementById('age').value ? parseFloat(document.getElementById('age').value) : null,
+                gender: document.getElementById('gender').value,
+                color: document.getElementById('color').value,
+                weight: document.getElementById('weight').value ? parseFloat(document.getElementById('weight').value) : null,
+                ownerName: document.getElementById('ownerName').value,
+                ownerPhone: document.getElementById('ownerPhone').value,
+                healthStatus: document.getElementById('healthStatus').value,
+                notes: document.getElementById('notes').value
+            };
+
+            const url = formData.id ? '/pet-api/pet/update' : '/pet-api/pet/add';
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.code === 200) {
+                    alert('保存成功');
+                    window.location.href = '/pet-api/pet/list';
+                } else {
+                    alert('保存失败：' + result.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('保存失败');
+            });
+        });
+
+        // 返回列表
+        function goBack() {
+            window.location.href = '/pet-api/pet/list';
+        }
+    </script>
+</body>
+</html>

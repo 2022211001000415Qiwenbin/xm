@@ -1,0 +1,72 @@
+
+server:
+  port: 8080
+  servlet:
+    context-path: /pet-api
+
+spring:
+  application:
+    name: pet-manage-platform
+
+  # Spring MVC配置
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+
+  # 数据源配置
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/pet_manage?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
+    username: root
+    password: 123456
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 20
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+
+  # Jackson配置
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+
+# MyBatis-Plus配置
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      id-type: AUTO
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+  mapper-locations: classpath:mapper/*.xml
+
+# Knife4j配置
+knife4j:
+  enable: true
+  setting:
+    language: zh-CN
+  production: false
+
+# springdoc-openapi配置
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  group-configs:
+    - group: default
+      paths-to-match: /**
+      packages-to-scan: com.qwb.petmanage.controller
+
+# 日志配置
+logging:
+  level:
+    com.qwb.petmanage.mapper: debug
