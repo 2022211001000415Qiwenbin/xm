@@ -1,0 +1,194 @@
+<template>
+  <div class="dashboard">
+    <el-row :gutter="20">
+      <el-col :span="8">
+        <div class="stat-card" @click="navigateTo('/abandoned-pet')">
+          <div class="stat-icon" style="background-color: #409EFF;">
+            <el-icon :size="30"><Box /></el-icon>
+          </div>
+          <div class="stat-content">
+            <div class="stat-label">宠物</div>
+          </div>
+        </div>
+      </el-col>
+      <el-col :span="8">
+        <div class="stat-card" @click="navigateTo('/adoption-application')">
+          <div class="stat-icon" style="background-color: #E6A23C;">
+            <el-icon :size="30"><Clock /></el-icon>
+          </div>
+          <div class="stat-content">
+            <div class="stat-label">审核申请</div>
+          </div>
+        </div>
+      </el-col>
+      <el-col :span="8">
+        <div class="stat-card" @click="navigateTo('/appointment')">
+          <div class="stat-icon" style="background-color: #F56C6C;">
+            <el-icon :size="30"><Calendar /></el-icon>
+          </div>
+          <div class="stat-content">
+            <div class="stat-label">预约</div>
+          </div>
+        </div>
+      </el-col>
+    </el-row>
+
+
+
+    <el-row :gutter="20" class="mt-20">
+      <el-col :span="24">
+        <el-card class="chart-card">
+          <template #header>
+            <div class="card-header">
+              <span>最新动态</span>
+            </div>
+          </template>
+          <el-table :data="recentActivities" stripe style="width: 100%">
+            <el-table-column prop="time" label="时间" width="180" />
+            <el-table-column prop="type" label="类型" width="120">
+              <template #default="scope">
+                <el-tag :type="getActivityType(scope.row.type)">
+                  {{ scope.row.type }}
+                </el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column prop="description" label="描述" />
+          </el-table>
+        </el-card>
+      </el-col>
+    </el-row>
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { Box, CircleCheck, Clock, Calendar } from '@element-plus/icons-vue'
+
+const router = useRouter()
+
+const stats = ref({
+  totalPets: 0,
+  adoptedPets: 0,
+  pendingApplications: 0,
+  todayAppointments: 0
+})
+
+const navigateTo = (path) => {
+  router.push(path)
+}
+
+
+
+const recentActivities = ref([
+  {
+    time: '2024-01-15 10:30',
+    type: '领养',
+    description: '用户张三成功领养了一只名为"小白"的宠物'
+  },
+  {
+    time: '2024-01-15 09:15',
+    type: '预约',
+    description: '用户李四预约了今天下午3点来参观宠物'
+  },
+  {
+    time: '2024-01-14 16:45',
+    type: '申请',
+    description: '收到新的领养申请，待审核'
+  },
+  {
+    time: '2024-01-14 14:20',
+    type: '登记',
+    description: '新登记了一只名为"小黑"的宠物'
+  },
+  {
+    time: '2024-01-14 11:00',
+    type: '领养',
+    description: '用户王五成功领养了一只名为"花花"的宠物'
+  }
+])
+
+const getActivityType = (type) => {
+  const typeMap = {
+    '领养': 'success',
+    '预约': 'warning',
+    '申请': 'info',
+    '登记': 'primary'
+  }
+  return typeMap[type] || ''
+}
+
+const loadStats = async () => {
+  // 模拟数据加载，实际项目中应该调用API
+  stats.value = {
+    totalPets: 128,
+    adoptedPets: 56,
+    pendingApplications: 12,
+    todayAppointments: 8
+  }
+}
+
+onMounted(() => {
+  loadStats()
+})
+</script>
+
+<style scoped lang="scss">
+.dashboard {
+  .stat-card {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: all 0.3s;
+    
+    &:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 7px 16px 0 rgba(0, 0, 0, 0.15);
+    }
+
+    .stat-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      margin-right: 20px;
+    }
+
+    .stat-content {
+      flex: 1;
+
+      .stat-label {
+        font-size: 16px;
+        color: #303133;
+        font-weight: bold;
+      }
+    }
+  }
+
+  .chart-card {
+    .card-header {
+      font-size: 16px;
+      font-weight: bold;
+      color: #303133;
+    }
+
+    .chart-placeholder {
+      height: 300px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+
+  .mt-20 {
+    margin-top: 20px;
+  }
+}
+</style>
