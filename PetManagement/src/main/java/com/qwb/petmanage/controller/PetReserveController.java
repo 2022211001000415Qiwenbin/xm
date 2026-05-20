@@ -1,7 +1,6 @@
 
 package com.qwb.petmanage.controller;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.qwb.petmanage.common.Result;
 import com.qwb.petmanage.entity.PetReserve;
@@ -29,22 +28,8 @@ public class PetReserveController {
                                            @RequestParam(required = false) String realName,
                                            @RequestParam(required = false) Long userId,
                                            @RequestParam(required = false) Long petId) {
-        Page<PetReserve> page = new Page<>(current, size);
-        QueryWrapper<PetReserve> queryWrapper = new QueryWrapper<>();
-        if (reserveStatus != null && !reserveStatus.isEmpty()) {
-            queryWrapper.eq("reserve_status", reserveStatus);
-        }
-        if (userId != null) {
-            queryWrapper.eq("user_id", userId);
-        }
-        if (petId != null) {
-            queryWrapper.eq("pet_id", petId);
-        }
-        if (realName != null && !realName.isEmpty()) {
-            queryWrapper.like("real_name", realName);
-        }
-        queryWrapper.orderByDesc("create_time");
-        return Result.success(petReserveService.page(page, queryWrapper));
+        Page<PetReserve> page = petReserveService.pageList(current, size, reserveStatus, userId, petId, realName);
+        return Result.success(page);
     }
 
     /**

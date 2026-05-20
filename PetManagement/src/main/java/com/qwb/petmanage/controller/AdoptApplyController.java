@@ -29,7 +29,7 @@ public class AdoptApplyController {
                                            @RequestParam(required = false) String realName,
                                            @RequestParam(required = false) Long userId,
                                            @RequestParam(required = false) Long petId) {
-        Page<AdoptApply> page = adoptApplyService.pageList(current, size, auditStatus, userId, petId);
+        Page<AdoptApply> page = adoptApplyService.pageList(current, size, auditStatus, realName, userId, petId);
         return Result.success(page);
     }
 
@@ -86,6 +86,23 @@ public class AdoptApplyController {
     @PostMapping("/delete/{id}")
     public Result<Void> delete(@PathVariable Long id) {
         adoptApplyService.removeById(id);
+        return Result.success();
+    }
+
+    /**
+     * 取消领养申请
+     */
+    @PostMapping("/cancel/{id}")
+    public Result<Void> cancel(@PathVariable Long id) {
+        AdoptApply adoptApply = adoptApplyService.getById(id);
+        if (adoptApply == null) {
+            return Result.error("申请记录不存在");
+        }
+        if (!"待审核".equals(adoptApply.getAuditStatus())) {
+            return Result.error("只能取消待审核的申请");
+        }
+        adoptApply.setAuditStatus("已取消");
+        adoptApplyService.updateById(adoptApply);
         return Result.success();
     }
 }

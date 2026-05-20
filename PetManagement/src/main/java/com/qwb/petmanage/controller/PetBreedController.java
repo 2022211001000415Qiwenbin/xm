@@ -61,7 +61,7 @@ public class PetBreedController {
      * 新增品种
      */
     @PostMapping
-    public Result<Void> add(@RequestBody PetBreed petBreed) {
+    public Result<Integer> add(@RequestBody PetBreed petBreed) {
         // 检查品种名称是否已存在
         QueryWrapper<PetBreed> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("breed_name", petBreed.getBreedName());
@@ -69,7 +69,7 @@ public class PetBreedController {
             return Result.error("品种名称已存在");
         }
         petBreedService.save(petBreed);
-        return Result.success();
+        return Result.success(petBreed.getBreedId());
     }
 
     /**

@@ -24,9 +24,9 @@ public class PetInfo {
 
     private String healthStatus;
 
-    private String abandonReason;
+    private String personality;
 
-    private String rescueAddress;
+    private String experience;
 
     private String petPhoto;
 

@@ -18,46 +18,61 @@
       </el-form>
     </el-card>
 
-    <el-card class="table-card">
+    <el-card class="list-card">
       <template #header>
         <div class="card-header">
           <span>我的预约</span>
         </div>
       </template>
-      <el-table :data="tableData" stripe border style="width: 100%">
-        <el-table-column prop="reserveId" label="预约ID" width="80" />
-        <el-table-column prop="petId" label="宠物ID" width="100" />
-        <el-table-column prop="reserveTime" label="预约时间" width="180">
-          <template #default="scope">
-            {{ formatDateTime(scope.row.reserveTime) }}
-          </template>
-        </el-table-column>
-        <el-table-column prop="reserveAddress" label="预约地址" show-overflow-tooltip />
-        <el-table-column prop="contactPerson" label="联系人" width="100" />
-        <el-table-column prop="contactPhone" label="联系电话" width="120" />
-        <el-table-column prop="reserveStatus" label="预约状态" width="100">
-          <template #default="scope">
-            <el-tag :type="getStatusType(scope.row.reserveStatus)">
-              {{ scope.row.reserveStatus }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="reserveRemark" label="备注" show-overflow-tooltip />
-        <el-table-column label="操作" width="150" fixed="right">
-          <template #default="scope">
-            <el-button link type="primary" size="small" @click="handleView(scope.row)">查看详情</el-button>
+
+      <div v-if="tableData.length === 0" class="empty-tip">
+        <el-empty description="暂无预约记录" />
+      </div>
+
+      <div v-else class="reservation-list">
+        <div v-for="item in tableData" :key="item.reserveId" class="reservation-item">
+          <div class="item-fields-row">
+            <div class="item-field">
+              <span class="field-label">预约ID</span>
+              <span class="field-value">{{ item.reserveId }}</span>
+            </div>
+            <div class="item-field">
+              <span class="field-label">宠物姓名</span>
+              <span class="field-value">{{ item.petName || '--' }}</span>
+            </div>
+            <div class="item-field">
+              <span class="field-label">预约时间</span>
+              <span class="field-value">{{ formatDateTime(item.reserveTime) || '--' }}</span>
+            </div>
+            <div class="item-field">
+              <span class="field-label">联系人</span>
+              <span class="field-value">{{ item.contactPerson || '--' }}</span>
+            </div>
+            <div class="item-field">
+              <span class="field-label">联系电话</span>
+              <span class="field-value">{{ item.contactPhone || '--' }}</span>
+            </div>
+            <div class="item-field">
+              <span class="field-label">预约状态</span>
+              <el-tag :type="getStatusType(item.reserveStatus)" size="default">{{ item.reserveStatus }}</el-tag>
+            </div>
+            <div class="item-field">
+              <span class="field-label">备注</span>
+              <span class="field-value">{{ item.reserveRemark || '无' }}</span>
+            </div>
+          </div>
+          <div class="item-actions">
             <el-button
-              v-if="scope.row.reserveStatus === '待确认'"
-              link
+              v-if="item.reserveStatus === '待确认'"
               type="danger"
               size="small"
-              @click="handleCancel(scope.row)"
+              @click="handleCancel(item)"
             >
               取消预约
             </el-button>
-          </template>
-        </el-table-column>
-      </el-table>
+          </div>
+        </div>
+      </div>
 
       <div class="pagination-container">
         <el-pagination
@@ -80,9 +95,8 @@
     >
       <el-descriptions :column="2" border>
         <el-descriptions-item label="预约ID">{{ currentReservation.reserveId }}</el-descriptions-item>
-        <el-descriptions-item label="宠物ID">{{ currentReservation.petId }}</el-descriptions-item>
+        <el-descriptions-item label="宠物姓名">{{ currentReservation.petName }}</el-descriptions-item>
         <el-descriptions-item label="预约时间" :span="2">{{ formatDateTime(currentReservation.reserveTime) }}</el-descriptions-item>
-        <el-descriptions-item label="预约地址" :span="2">{{ currentReservation.reserveAddress }}</el-descriptions-item>
         <el-descriptions-item label="联系人">{{ currentReservation.contactPerson }}</el-descriptions-item>
         <el-descriptions-item label="联系电话">{{ currentReservation.contactPhone }}</el-descriptions-item>
         <el-descriptions-item label="预约状态">
@@ -149,7 +163,7 @@ const loadData = async () => {
       current: pagination.currentPage,
       size: pagination.pageSize,
       reserveStatus: searchForm.status,
-      userId: store.state.user.userId  // 只查询当前用户的预约
+      userId: store.state.user.userId
     })
     tableData.value = res.data.records
     pagination.total = res.data.total
@@ -175,12 +189,16 @@ const handleView = (row) => {
 
 const handleCancel = async (row) => {
   try {
-    await ElMessageBox.confirm(`确定要取消这个预约吗？`, '提示', {
+    await ElMessageBox.confirm('确定要取消这个预约吗？', '提示', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning'
     })
-    await cancelReservation(row.reserveId)
+    await cancelReservation({
+      id: row.reserveId,
+      cancelReason: '用户主动取消',
+      cancelPerson: store.state.user.realName || '用户'
+    })
     ElMessage.success('预约已取消')
     loadData()
   } catch (error) {
@@ -211,11 +229,74 @@ onMounted(() => {
     margin-bottom: 20px;
   }
 
-  .table-card {
+  .list-card {
     .card-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
+    }
+
+    .empty-tip {
+      padding: 40px 0;
+    }
+
+    .reservation-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .reservation-item {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 20px 24px;
+      background: #fafafa;
+      border-radius: 8px;
+      border: 1px solid #ebeef5;
+      transition: all 0.3s;
+
+      &:hover {
+        background: #f0f7ff;
+        border-color: #d0e3ff;
+        box-shadow: 0 2px 8px rgba(64, 158, 255, 0.1);
+      }
+
+      .item-fields-row {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+
+      .item-field {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+
+        .field-label {
+          color: #909399;
+          font-size: 16px;
+          white-space: nowrap;
+          min-width: 90px;
+          text-align: right;
+        }
+
+        .field-value {
+          color: #303133;
+          font-size: 17px;
+          font-weight: 500;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+      }
+
+      .item-actions {
+        display: flex;
+        justify-content: flex-end;
+        padding-top: 10px;
+        border-top: 1px dashed #e4e7ed;
+      }
     }
 
     .pagination-container {

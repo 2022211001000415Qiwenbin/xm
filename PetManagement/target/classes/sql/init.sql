@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS user (
   phone VARCHAR(11) NOT NULL COMMENT '联系电话',
   address VARCHAR(255) COMMENT '居住地址',
   pet_experience VARCHAR(255) COMMENT '养宠经历',
+  avatar VARCHAR(255) COMMENT '头像URL',
   create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '注册时间',
   update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户表（领养人）';
@@ -65,6 +66,11 @@ CREATE TABLE IF NOT EXISTS adopt_apply (
   user_id INT NOT NULL COMMENT '申请人ID',
   pet_id INT NOT NULL COMMENT '申请宠物ID',
   apply_info VARCHAR(255) COMMENT '申请说明',
+  applicant_name VARCHAR(20) COMMENT '申请人姓名',
+  applicant_phone VARCHAR(11) COMMENT '申请人联系方式',
+  applicant_occupation VARCHAR(50) COMMENT '申请人职业',
+  applicant_address VARCHAR(255) COMMENT '申请人家庭地址',
+  applicant_experience VARCHAR(500) COMMENT '申请人养宠经验',
   audit_status VARCHAR(20) NOT NULL DEFAULT '待审核' COMMENT '审核状态（待审核/通过/拒绝）',
   audit_remark VARCHAR(255) COMMENT '审核备注',
   audit_admin INT COMMENT '审核管理员ID',
@@ -128,3 +134,41 @@ INSERT INTO adopt_apply (user_id, pet_id, apply_info, audit_status) VALUES
 INSERT INTO pet_reserve (user_id, pet_id, reserve_time, reserve_address, contact_person, contact_phone, reserve_status) VALUES
 (1, 1, '2024-03-20 10:00:00', '北京市朝阳区宠物救助中心', '张三', '13800138001', '待确认'),
 (2, 2, '2024-03-21 14:00:00', '上海市浦东新区宠物救助中心', '李四', '13800138002', '待确认');
+
+-- 7.意见反馈表
+CREATE TABLE IF NOT EXISTS feedback (
+  feedback_id INT PRIMARY KEY AUTO_INCREMENT COMMENT '反馈ID',
+  user_id INT NOT NULL COMMENT '用户ID',
+  title VARCHAR(100) NOT NULL COMMENT '反馈标题',
+  content VARCHAR(1000) NOT NULL COMMENT '反馈内容',
+  contact VARCHAR(50) COMMENT '联系方式',
+  status VARCHAR(20) NOT NULL DEFAULT '待处理' COMMENT '处理状态（待处理/处理中/已处理）',
+  reply VARCHAR(1000) COMMENT '管理员回复',
+  reply_admin_id INT COMMENT '回复管理员ID',
+  create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '提交时间',
+  reply_time DATETIME COMMENT '回复时间'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='意见反馈表';
+
+-- 8.宠物知识文章表
+CREATE TABLE IF NOT EXISTS pet_knowledge (
+  knowledge_id INT PRIMARY KEY AUTO_INCREMENT COMMENT '知识ID',
+  title VARCHAR(100) NOT NULL COMMENT '文章标题',
+  content TEXT NOT NULL COMMENT '文章内容',
+  cover VARCHAR(255) COMMENT '封面图片URL',
+  category VARCHAR(50) COMMENT '分类（如：饲养指南/健康护理/训练技巧/品种介绍）',
+  author_id INT COMMENT '作者管理员ID',
+  view_count INT DEFAULT 0 COMMENT '浏览次数',
+  create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='宠物知识文章表';
+
+-- 9.知识评论表
+CREATE TABLE IF NOT EXISTS knowledge_comment (
+  comment_id INT PRIMARY KEY AUTO_INCREMENT COMMENT '评论ID',
+  knowledge_id INT NOT NULL COMMENT '知识文章ID',
+  user_id INT NOT NULL COMMENT '评论用户ID',
+  content VARCHAR(500) NOT NULL COMMENT '评论内容',
+  create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '评论时间',
+  FOREIGN KEY (knowledge_id) REFERENCES pet_knowledge(knowledge_id),
+  FOREIGN KEY (user_id) REFERENCES user(user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='知识评论表';

@@ -10,7 +10,12 @@ public interface PetService extends IService<Pet> {
     /**
      * 分页查询宠物列表
      */
-    Page<Pet> pageList(Integer current, Integer size, String petName, String adoptStatus);
+    Page<Pet> pageList(Integer current, Integer size, String petName, String adoptStatus, String breedType);
+
+    /**
+     * 获取宠物详情（含品种信息）
+     */
+    Pet getPetDetail(Integer petId);
 
     /**
      * 添加宠物

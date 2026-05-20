@@ -100,8 +100,16 @@ const menuRoutes = computed(() => {
         meta: { title: '我的预约', icon: 'Calendar' }
       },
       {
+        path: '/user/knowledge',
+        meta: { title: '宠物知识', icon: 'Reading' }
+      },
+      {
         path: '/user/profile',
         meta: { title: '个人中心', icon: 'User' }
+      },
+      {
+        path: '/user/feedback',
+        meta: { title: '意见反馈', icon: 'ChatDotRound' }
       }
     ]
   } else {
@@ -122,6 +130,18 @@ const menuRoutes = computed(() => {
       {
         path: '/appointment',
         meta: { title: '预约管理', icon: 'Calendar' }
+      },
+      {
+        path: '/knowledge-manage',
+        meta: { title: '知识管理', icon: 'Reading' }
+      },
+      {
+        path: '/user-manage',
+        meta: { title: '用户管理', icon: 'UserFilled' }
+      },
+      {
+        path: '/feedback-manage',
+        meta: { title: '反馈管理', icon: 'ChatDotRound' }
       }
     ]
   }

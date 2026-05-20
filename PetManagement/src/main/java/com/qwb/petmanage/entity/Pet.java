@@ -16,6 +16,12 @@ public class Pet {
 
     private Integer breedId;
 
+    @com.baomidou.mybatisplus.annotation.TableField(exist = false)
+    private String breedType;
+
+    @com.baomidou.mybatisplus.annotation.TableField(exist = false)
+    private String breedName;
+
     private String petName;
 
     private Integer age;
@@ -24,9 +30,9 @@ public class Pet {
 
     private String healthStatus;
 
-    private String abandonReason;
+    private String personality;
 
-    private String rescueAddress;
+    private String experience;
 
     private String petPhoto;
 

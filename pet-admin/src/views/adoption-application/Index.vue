@@ -27,8 +27,12 @@
       </template>
       <el-table :data="tableData" stripe border style="width: 100%">
         <el-table-column prop="applyId" label="ID" width="80" />
-        <el-table-column prop="userId" label="用户ID" width="100" />
-        <el-table-column prop="petId" label="宠物ID" width="100" />
+        <el-table-column prop="applicantName" label="申请人姓名" width="100" />
+        <el-table-column prop="applicantPhone" label="联系方式" width="120" />
+        <el-table-column prop="applicantOccupation" label="职业" width="100" />
+        <el-table-column prop="applicantAddress" label="家庭地址" width="150" show-overflow-tooltip />
+        <el-table-column prop="applicantExperience" label="养宠经验" width="150" show-overflow-tooltip />
+        <el-table-column prop="petName" label="宠物名称" width="120" />
         <el-table-column prop="applyInfo" label="申请信息" width="200" show-overflow-tooltip />
         <el-table-column prop="auditStatus" label="审核状态" width="100">
           <template #default="scope">
@@ -38,7 +42,7 @@
           </template>
         </el-table-column>
         <el-table-column prop="auditRemark" label="审核备注" width="150" show-overflow-tooltip />
-        <el-table-column prop="auditAdmin" label="审核管理员" width="120" />
+        <el-table-column prop="adminName" label="审核人" width="100" />
         <el-table-column prop="applyTime" label="申请时间" width="160" />
         <el-table-column prop="auditTime" label="审核时间" width="160" />
         <el-table-column label="操作" width="200" fixed="right">
@@ -87,16 +91,20 @@
     >
       <el-descriptions :column="2" border>
         <el-descriptions-item label="申请ID">{{ currentApplication.applyId }}</el-descriptions-item>
-        <el-descriptions-item label="用户ID">{{ currentApplication.userId }}</el-descriptions-item>
-        <el-descriptions-item label="宠物ID">{{ currentApplication.petId }}</el-descriptions-item>
-        <el-descriptions-item label="申请信息">{{ currentApplication.applyInfo }}</el-descriptions-item>
+        <el-descriptions-item label="申请人姓名">{{ currentApplication.applicantName || '--' }}</el-descriptions-item>
+        <el-descriptions-item label="联系方式">{{ currentApplication.applicantPhone || '--' }}</el-descriptions-item>
+        <el-descriptions-item label="职业">{{ currentApplication.applicantOccupation || '--' }}</el-descriptions-item>
+        <el-descriptions-item label="家庭地址" :span="2">{{ currentApplication.applicantAddress || '--' }}</el-descriptions-item>
+        <el-descriptions-item label="养宠经验" :span="2">{{ currentApplication.applicantExperience || '无' }}</el-descriptions-item>
+        <el-descriptions-item label="宠物名称">{{ currentApplication.petName || '--' }}</el-descriptions-item>
+        <el-descriptions-item label="申请信息" :span="2">{{ currentApplication.applyInfo }}</el-descriptions-item>
         <el-descriptions-item label="审核状态">
           <el-tag :type="getStatusType(currentApplication.auditStatus)">
             {{ currentApplication.auditStatus }}
           </el-tag>
         </el-descriptions-item>
         <el-descriptions-item label="审核备注">{{ currentApplication.auditRemark || '无' }}</el-descriptions-item>
-        <el-descriptions-item label="审核管理员">{{ currentApplication.auditAdmin }}</el-descriptions-item>
+        <el-descriptions-item label="审核人">{{ currentApplication.adminName || '--' }}</el-descriptions-item>
         <el-descriptions-item label="申请时间">{{ currentApplication.applyTime }}</el-descriptions-item>
         <el-descriptions-item label="审核时间">{{ currentApplication.auditTime || '未审核' }}</el-descriptions-item>
       </el-descriptions>

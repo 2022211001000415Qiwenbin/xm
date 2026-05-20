@@ -15,7 +15,7 @@ public interface AdoptApplyService extends IService<AdoptApply> {
      * @param petId 宠物ID
      * @return 分页结果
      */
-    Page<AdoptApply> pageList(Integer current, Integer size, String auditStatus, Long userId, Long petId);
+    Page<AdoptApply> pageList(Integer current, Integer size, String auditStatus, String realName, Long userId, Long petId);
     
     /**
      * 提交领养申请

@@ -7,6 +7,9 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.qwb.petmanage.entity.AdoptApply;
 import com.qwb.petmanage.mapper.AdoptApplyMapper;
 import com.qwb.petmanage.service.AdoptApplyService;
+import com.qwb.petmanage.service.PetService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -14,21 +17,16 @@ import java.util.List;
 @Service
 public class AdoptApplyServiceImpl extends ServiceImpl<AdoptApplyMapper, AdoptApply> implements AdoptApplyService {
 
+    @Lazy
+    @Autowired
+    private PetService petService;
+
     @Override
-    public Page<AdoptApply> pageList(Integer current, Integer size, String auditStatus, Long userId, Long petId) {
+    public Page<AdoptApply> pageList(Integer current, Integer size, String auditStatus, String realName, Long userId, Long petId) {
         Page<AdoptApply> page = new Page<>(current, size);
-        LambdaQueryWrapper<AdoptApply> wrapper = new LambdaQueryWrapper<>();
-        if (auditStatus != null && !auditStatus.isEmpty()) {
-            wrapper.eq(AdoptApply::getAuditStatus, auditStatus);
-        }
-        if (userId != null) {
-            wrapper.eq(AdoptApply::getUserId, userId);
-        }
-        if (petId != null) {
-            wrapper.eq(AdoptApply::getPetId, petId);
-        }
-        wrapper.orderByDesc(AdoptApply::getApplyTime);
-        return page(page, wrapper);
+        List<AdoptApply> records = baseMapper.selectApplyPage(page, auditStatus, realName);
+        page.setRecords(records);
+        return page;
     }
 
     @Override
@@ -44,11 +42,22 @@ public class AdoptApplyServiceImpl extends ServiceImpl<AdoptApplyMapper, AdoptAp
         if (adoptApply == null) {
             throw new RuntimeException("申请记录不存在");
         }
+        String previousStatus = adoptApply.getAuditStatus();
         adoptApply.setAuditStatus(auditStatus);
         adoptApply.setAuditRemark(auditRemark);
         adoptApply.setAuditAdmin(auditAdminId);
         adoptApply.setAuditTime(LocalDateTime.now());
-        return updateById(adoptApply);
+        boolean updated = updateById(adoptApply);
+        // 审核通过时，联动更新宠物状态为"已领养"
+        if (updated && "通过".equals(auditStatus) && adoptApply.getPetId() != null) {
+            petService.updateAdoptStatus(adoptApply.getPetId().intValue(), "已领养");
+        }
+        // 审核拒绝时，如果之前是审核通过状态，需要将宠物状态恢复为"待领养"
+        if (updated && "拒绝".equals(auditStatus) && adoptApply.getPetId() != null
+                && "通过".equals(previousStatus)) {
+            petService.updateAdoptStatus(adoptApply.getPetId().intValue(), "待领养");
+        }
+        return updated;
     }
 
     @Override

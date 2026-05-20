@@ -101,7 +101,7 @@
             <el-form-item prop="address">
               <el-input
                 v-model="registerForm.address"
-                placeholder="请输入地址（选填）"
+                placeholder="请输入地址"
                 prefix-icon="Location"
                 size="large"
               />
@@ -111,7 +111,7 @@
                 v-model="registerForm.petExperience"
                 type="textarea"
                 :rows="3"
-                placeholder="请输入养宠经历（选填）"
+                placeholder="请输入养宠经历"
                 size="large"
               />
             </el-form-item>
@@ -227,6 +227,12 @@ const registerRules = {
   ],
   idCard: [
     { required: true, validator: validateIdCard, trigger: 'blur' }
+  ],
+  address: [
+    { required: true, message: '请输入地址', trigger: 'blur' }
+  ],
+  petExperience: [
+    { required: true, message: '请输入养宠经历', trigger: 'blur' }
   ]
 }
 
@@ -243,7 +249,8 @@ const handleLogin = async () => {
           token: res.data.token,
           username: res.data.username,
           role: res.data.role,
-          userId: res.data.userId || res.data.adminId
+          userId: res.data.userId || res.data.adminId,
+          avatar: res.data.avatar
         })
 
         ElMessage.success('登录成功')

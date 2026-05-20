@@ -7,13 +7,17 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.qwb.petmanage.entity.AdoptApply;
 import com.qwb.petmanage.entity.Pet;
 import com.qwb.petmanage.mapper.PetMapper;
+import com.qwb.petmanage.entity.PetBreed;
 import com.qwb.petmanage.service.AdoptApplyService;
+import com.qwb.petmanage.service.PetBreedService;
 import com.qwb.petmanage.service.PetService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class PetServiceImpl extends ServiceImpl<PetMapper, Pet> implements PetService {
@@ -21,24 +25,38 @@ public class PetServiceImpl extends ServiceImpl<PetMapper, Pet> implements PetSe
     @Autowired
     private AdoptApplyService adoptApplyService;
 
+    @Autowired
+    private PetBreedService petBreedService;
+
     @Override
-    public Page<Pet> pageList(Integer current, Integer size, String petName, String adoptStatus) {
+    public Page<Pet> pageList(Integer current, Integer size, String petName, String adoptStatus, String breedType) {
         Page<Pet> page = new Page<>(current, size);
-        LambdaQueryWrapper<Pet> wrapper = new LambdaQueryWrapper<>();
+        List<Pet> records = baseMapper.selectPetPage(page, petName, adoptStatus, breedType);
+        page.setRecords(records);
+        return page;
+    }
 
-        if (StringUtils.hasText(petName)) {
-            wrapper.like(Pet::getPetName, petName);
-        }
-        if (StringUtils.hasText(adoptStatus)) {
-            wrapper.eq(Pet::getAdoptStatus, adoptStatus);
-        }
-
-        wrapper.orderByDesc(Pet::getCreateTime);
-        return page(page, wrapper);
+    @Override
+    public Pet getPetDetail(Integer petId) {
+        return baseMapper.selectPetDetail(petId);
     }
 
     @Override
     public boolean addPet(Pet pet) {
+        // 根据breedType和breedName查找或创建品种
+        if (StringUtils.hasText(pet.getBreedType()) && StringUtils.hasText(pet.getBreedName())) {
+            LambdaQueryWrapper<PetBreed> breedWrapper = new LambdaQueryWrapper<>();
+            breedWrapper.eq(PetBreed::getBreedType, pet.getBreedType());
+            breedWrapper.eq(PetBreed::getBreedName, pet.getBreedName());
+            PetBreed breed = petBreedService.getOne(breedWrapper);
+            if (breed == null) {
+                breed = new PetBreed();
+                breed.setBreedType(pet.getBreedType());
+                breed.setBreedName(pet.getBreedName());
+                petBreedService.save(breed);
+            }
+            pet.setBreedId(breed.getBreedId());
+        }
         pet.setCreateTime(LocalDateTime.now());
         pet.setUpdateTime(LocalDateTime.now());
         return save(pet);
@@ -46,6 +64,20 @@ public class PetServiceImpl extends ServiceImpl<PetMapper, Pet> implements PetSe
 
     @Override
     public boolean updatePet(Pet pet) {
+        // 根据breedType和breedName查找或创建品种
+        if (StringUtils.hasText(pet.getBreedType()) && StringUtils.hasText(pet.getBreedName())) {
+            LambdaQueryWrapper<PetBreed> breedWrapper = new LambdaQueryWrapper<>();
+            breedWrapper.eq(PetBreed::getBreedType, pet.getBreedType());
+            breedWrapper.eq(PetBreed::getBreedName, pet.getBreedName());
+            PetBreed breed = petBreedService.getOne(breedWrapper);
+            if (breed == null) {
+                breed = new PetBreed();
+                breed.setBreedType(pet.getBreedType());
+                breed.setBreedName(pet.getBreedName());
+                petBreedService.save(breed);
+            }
+            pet.setBreedId(breed.getBreedId());
+        }
         pet.setUpdateTime(LocalDateTime.now());
         return updateById(pet);
     }

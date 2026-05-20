@@ -2,11 +2,15 @@
   <div class="home-container">
     <el-card class="search-card">
       <el-form :model="searchForm" inline>
-        <el-form-item label="宠物名称">
-          <el-input v-model="searchForm.petName" placeholder="请输入宠物名称" clearable />
+        <el-form-item label="品种">
+          <el-select v-model="searchForm.breedType" placeholder="请选择品种" clearable @change="handleSearch">
+            <el-option label="狗" value="狗" />
+            <el-option label="猫" value="猫" />
+            <el-option label="其他" value="其他" />
+          </el-select>
         </el-form-item>
         <el-form-item label="领养状态">
-          <el-select v-model="searchForm.adoptStatus" placeholder="请选择状态" clearable>
+          <el-select v-model="searchForm.adoptStatus" placeholder="请选择状态" clearable @change="handleSearch">
             <el-option label="待领养" value="待领养" />
             <el-option label="已领养" value="已领养" />
           </el-select>
@@ -36,12 +40,10 @@
             <div class="pet-info">
               <h3>{{ pet.petName }}</h3>
               <div class="pet-details">
-                <p><span class="label">品种ID：</span>{{ pet.breedId }}</p>
+                <p><span class="label">品种：</span>{{ pet.breedType }} - {{ pet.breedName }}</p>
                 <p><span class="label">年龄：</span>{{ pet.age }}岁</p>
                 <p><span class="label">性别：</span>{{ pet.gender }}</p>
                 <p><span class="label">健康状况：</span>{{ pet.healthStatus }}</p>
-                <p><span class="label">救助地址：</span>{{ pet.rescueAddress }}</p>
-                <p><span class="label">弃养原因：</span>{{ pet.abandonReason }}</p>
               </div>
               <div class="pet-status">
                 <el-tag :type="pet.adoptStatus === '已领养' ? 'success' : 'warning'">
@@ -85,45 +87,7 @@
       </div>
     </el-card>
 
-    <!-- 宠物详情对话框 -->
-    <el-dialog
-      v-model="detailDialogVisible"
-      :title="currentPet.petName"
-      width="600px"
-    >
-      <el-descriptions :column="2" border>
-        <el-descriptions-item label="宠物名称">{{ currentPet.petName }}</el-descriptions-item>
-        <el-descriptions-item label="品种ID">{{ currentPet.breedId }}</el-descriptions-item>
-        <el-descriptions-item label="年龄">{{ currentPet.age }}岁</el-descriptions-item>
-        <el-descriptions-item label="性别">{{ currentPet.gender }}</el-descriptions-item>
-        <el-descriptions-item label="健康状况">{{ currentPet.healthStatus }}</el-descriptions-item>
-        <el-descriptions-item label="弃养原因">{{ currentPet.abandonReason }}</el-descriptions-item>
-        <el-descriptions-item label="救助地址" :span="2">{{ currentPet.rescueAddress }}</el-descriptions-item>
-        <el-descriptions-item label="领养状态" :span="2">
-          <el-tag :type="currentPet.adoptStatus === '已领养' ? 'success' : 'warning'">
-            {{ currentPet.adoptStatus }}
-          </el-tag>
-        </el-descriptions-item>
-        <el-descriptions-item label="备注" :span="2">{{ currentPet.remark || '无' }}</el-descriptions-item>
-      </el-descriptions>
-      <template #footer>
-        <el-button @click="detailDialogVisible = false">关闭</el-button>
-        <el-button
-          v-if="currentPet.adoptStatus === '待领养'"
-          type="primary"
-          @click="handleAdopt(currentPet)"
-        >
-          申请领养
-        </el-button>
-        <el-button
-          v-if="currentPet.adoptStatus === '待领养'"
-          type="info"
-          @click="handleReserve(currentPet)"
-        >
-          预约看宠
-        </el-button>
-      </template>
-    </el-dialog>
+
 
     <!-- 领养申请对话框 -->
     <el-dialog
@@ -135,12 +99,32 @@
         <el-form-item label="宠物名称">
           <el-input v-model="currentPet.petName" disabled />
         </el-form-item>
+        <el-form-item label="姓名" prop="applicantName">
+          <el-input v-model="adoptForm.applicantName" placeholder="请输入您的姓名" />
+        </el-form-item>
+        <el-form-item label="联系方式" prop="applicantPhone">
+          <el-input v-model="adoptForm.applicantPhone" placeholder="请输入您的联系方式" maxlength="11" />
+        </el-form-item>
+        <el-form-item label="职业" prop="applicantOccupation">
+          <el-input v-model="adoptForm.applicantOccupation" placeholder="请输入您的职业" />
+        </el-form-item>
+        <el-form-item label="家庭地址" prop="applicantAddress">
+          <el-input v-model="adoptForm.applicantAddress" placeholder="请输入您的家庭地址" />
+        </el-form-item>
+        <el-form-item label="养宠经验" prop="applicantExperience">
+          <el-input
+            v-model="adoptForm.applicantExperience"
+            type="textarea"
+            :rows="3"
+            placeholder="请输入您的养宠经验"
+          />
+        </el-form-item>
         <el-form-item label="申请信息" prop="applyInfo">
           <el-input
             v-model="adoptForm.applyInfo"
             type="textarea"
             :rows="4"
-            placeholder="请输入申请信息，说明您的养宠经验和领养意愿"
+            placeholder="请输入申请信息，说明您的领养意愿"
           />
         </el-form-item>
       </el-form>
@@ -170,9 +154,6 @@
             style="width: 100%"
           />
         </el-form-item>
-        <el-form-item label="预约地址" prop="reserveAddress">
-          <el-input v-model="reserveForm.reserveAddress" placeholder="请输入预约地址" />
-        </el-form-item>
         <el-form-item label="联系人" prop="contactPerson">
           <el-input v-model="reserveForm.contactPerson" placeholder="请输入联系人姓名" />
         </el-form-item>
@@ -197,16 +178,39 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { getPetPage, submitAdoption, submitReservation } from '@/api/pet'
+import { getBreedList } from '@/api/abandonedPet'
 import { useStore } from 'vuex'
+import { useRouter } from 'vue-router'
 
 const store = useStore()
+const router = useRouter()
+
+const breedList = ref([])
+const breedTypes = ['狗', '猫', '其他']
+
+const getBreedName = (breedId) => {
+  const breed = breedList.value.find(b => b.breedId === breedId)
+  if (breed) {
+    return breed.breedType + ' - ' + breed.breedName
+  }
+  return '未知品种'
+}
+
+const loadBreedList = async () => {
+  try {
+    const res = await getBreedList()
+    breedList.value = res.data
+  } catch (error) {
+    // 错误信息已在响应拦截器中处理
+  }
+}
 
 const searchForm = reactive({
-  petName: '',
-  adoptStatus: '待领养'
+  adoptStatus: '待领养',
+  breedType: ''
 })
 
 const tableData = ref([])
@@ -216,17 +220,37 @@ const pagination = reactive({
   total: 0
 })
 
-const detailDialogVisible = ref(false)
 const adoptDialogVisible = ref(false)
 const reserveDialogVisible = ref(false)
 const currentPet = ref({})
 
 const adoptFormRef = ref(null)
 const adoptForm = reactive({
+  applicantName: '',
+  applicantPhone: '',
+  applicantOccupation: '',
+  applicantAddress: '',
+  applicantExperience: '',
   applyInfo: ''
 })
 
 const adoptRules = {
+  applicantName: [
+    { required: true, message: '请输入姓名', trigger: 'blur' }
+  ],
+  applicantPhone: [
+    { required: true, message: '请输入联系方式', trigger: 'blur' },
+    { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号码', trigger: 'blur' }
+  ],
+  applicantOccupation: [
+    { required: true, message: '请输入职业', trigger: 'blur' }
+  ],
+  applicantAddress: [
+    { required: true, message: '请输入家庭地址', trigger: 'blur' }
+  ],
+  applicantExperience: [
+    { required: true, message: '请输入养宠经验', trigger: 'blur' }
+  ],
   applyInfo: [
     { required: true, message: '请输入申请信息', trigger: 'blur' },
     { min: 10, message: '申请信息不能少于10个字符', trigger: 'blur' }
@@ -236,7 +260,6 @@ const adoptRules = {
 const reserveFormRef = ref(null)
 const reserveForm = reactive({
   reserveTime: '',
-  reserveAddress: '',
   contactPerson: '',
   contactPhone: '',
   reserveRemark: ''
@@ -245,9 +268,6 @@ const reserveForm = reactive({
 const reserveRules = {
   reserveTime: [
     { required: true, message: '请选择预约时间', trigger: 'change' }
-  ],
-  reserveAddress: [
-    { required: true, message: '请输入预约地址', trigger: 'blur' }
   ],
   contactPerson: [
     { required: true, message: '请输入联系人姓名', trigger: 'blur' }
@@ -263,13 +283,13 @@ const loadData = async () => {
     const res = await getPetPage({
       current: pagination.currentPage,
       size: pagination.pageSize,
-      petName: searchForm.petName,
-      adoptStatus: searchForm.adoptStatus
+      adoptStatus: searchForm.adoptStatus,
+      breedType: searchForm.breedType
     })
     tableData.value = res.data.records
     pagination.total = res.data.total
   } catch (error) {
-    // 错误信息已在 request.js 的响应拦截器中处理
+    // 错误信息已在响应拦截器中处理
   }
 }
 
@@ -279,18 +299,22 @@ const handleSearch = () => {
 }
 
 const handleReset = () => {
-  searchForm.petName = ''
   searchForm.adoptStatus = '待领养'
+  searchForm.breedType = ''
   handleSearch()
 }
 
 const handleViewDetail = (pet) => {
-  currentPet.value = { ...pet }
-  detailDialogVisible.value = true
+  router.push(`/user/pet/${pet.petId}`)
 }
 
 const handleAdopt = (pet) => {
   currentPet.value = { ...pet }
+  adoptForm.applicantName = ''
+  adoptForm.applicantPhone = ''
+  adoptForm.applicantOccupation = ''
+  adoptForm.applicantAddress = ''
+  adoptForm.applicantExperience = ''
   adoptForm.applyInfo = ''
   adoptDialogVisible.value = true
 }
@@ -298,7 +322,6 @@ const handleAdopt = (pet) => {
 const handleReserve = (pet) => {
   currentPet.value = { ...pet }
   reserveForm.reserveTime = ''
-  reserveForm.reserveAddress = pet.rescueAddress
   reserveForm.contactPerson = ''
   reserveForm.contactPhone = ''
   reserveForm.reserveRemark = ''
@@ -313,6 +336,11 @@ const handleSubmitAdopt = async () => {
         await submitAdoption({
           userId: store.state.user.userId,
           petId: currentPet.value.petId,
+          applicantName: adoptForm.applicantName,
+          applicantPhone: adoptForm.applicantPhone,
+          applicantOccupation: adoptForm.applicantOccupation,
+          applicantAddress: adoptForm.applicantAddress,
+          applicantExperience: adoptForm.applicantExperience,
           applyInfo: adoptForm.applyInfo
         })
         ElMessage.success('领养申请提交成功，请等待审核')
@@ -334,7 +362,6 @@ const handleSubmitReserve = async () => {
           userId: store.state.user.userId,
           petId: currentPet.value.petId,
           reserveTime: reserveForm.reserveTime,
-          reserveAddress: reserveForm.reserveAddress,
           contactPerson: reserveForm.contactPerson,
           contactPhone: reserveForm.contactPhone,
           reserveRemark: reserveForm.reserveRemark
@@ -360,6 +387,7 @@ const handleCurrentChange = (val) => {
 }
 
 onMounted(() => {
+  loadBreedList()
   loadData()
 })
 </script>

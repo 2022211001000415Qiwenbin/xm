@@ -1,6 +1,27 @@
 import request from '@/utils/request'
 
 /**
+ * 获取品种列表
+ */
+export function getBreedList() {
+  return request({
+    url: '/petBreed/list',
+    method: 'get'
+  })
+}
+
+/**
+ * 新增品种
+ */
+export function addBreed(data) {
+  return request({
+    url: '/petBreed',
+    method: 'post',
+    data
+  })
+}
+
+/**
  * 获取宠物列表
  * @param {Object} params - 查询参数
  * @param {number} params.current - 当前页

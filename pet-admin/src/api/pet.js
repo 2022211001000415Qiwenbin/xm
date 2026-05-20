@@ -77,11 +77,26 @@ export function getMyReservations(params) {
 
 /**
  * 取消预约
- * @param {number} id - 预约ID
+ * @param {Object} data - 取消信息
+ * @param {number} data.id - 预约ID
+ * @param {string} data.cancelReason - 取消原因
+ * @param {string} data.cancelPerson - 取消操作人
  */
-export function cancelReservation(id) {
+export function cancelReservation(data) {
   return request({
-    url: `/pet-reserve/cancel/${id}`,
+    url: '/pet-reserve/cancel',
+    method: 'post',
+    params: data
+  })
+}
+
+/**
+ * 取消领养申请
+ * @param {number} id - 申请ID
+ */
+export function cancelAdoption(id) {
+  return request({
+    url: `/adopt-apply/cancel/${id}`,
     method: 'post'
   })
 }

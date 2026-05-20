@@ -2,6 +2,7 @@
 package com.qwb.petmanage.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -20,8 +21,6 @@ public class PetReserve {
 
     private LocalDateTime reserveTime;
 
-    private String reserveAddress;
-
     private String contactPerson;
 
     private String contactPhone;
@@ -31,6 +30,12 @@ public class PetReserve {
     private Long confirmAdmin;
 
     private String reserveRemark;
+
+    @TableField(exist = false)
+    private String petName;
+
+    @TableField(exist = false)
+    private String realName;
 
     private LocalDateTime createTime;
 

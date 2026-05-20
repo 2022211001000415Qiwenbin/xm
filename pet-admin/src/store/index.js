@@ -6,7 +6,8 @@ export default createStore({
       token: localStorage.getItem('token') || '',
       username: localStorage.getItem('username') || '',
       role: localStorage.getItem('role') || '',
-      userId: localStorage.getItem('userId') || ''
+      userId: localStorage.getItem('userId') || '',
+      avatar: localStorage.getItem('avatar') || ''
     },
     sidebarCollapsed: false
   },
@@ -27,26 +28,33 @@ export default createStore({
       state.user.userId = userId
       localStorage.setItem('userId', userId)
     },
+    SET_AVATAR(state, avatar) {
+      state.user.avatar = avatar
+      localStorage.setItem('avatar', avatar)
+    },
     CLEAR_USER(state) {
       state.user.token = ''
       state.user.username = ''
       state.user.role = ''
       state.user.userId = ''
+      state.user.avatar = ''
       localStorage.removeItem('token')
       localStorage.removeItem('username')
       localStorage.removeItem('role')
       localStorage.removeItem('userId')
+      localStorage.removeItem('avatar')
     },
     TOGGLE_SIDEBAR(state) {
       state.sidebarCollapsed = !state.sidebarCollapsed
     }
   },
   actions: {
-    login({ commit }, { token, username, role, userId }) {
+    login({ commit }, { token, username, role, userId, avatar }) {
       commit('SET_TOKEN', token)
       commit('SET_USERNAME', username)
       commit('SET_ROLE', role)
       commit('SET_USER_ID', userId)
+      if (avatar) commit('SET_AVATAR', avatar)
     },
     logout({ commit }) {
       commit('CLEAR_USER')

@@ -3,10 +3,17 @@
     <el-card class="search-card">
       <el-form :model="searchForm" inline>
         <el-form-item label="宠物名称">
-          <el-input v-model="searchForm.name" placeholder="请输入宠物名称" clearable />
+          <el-input v-model="searchForm.petName" placeholder="请输入宠物名称" clearable />
+        </el-form-item>
+        <el-form-item label="品种">
+          <el-select v-model="searchForm.breedType" placeholder="请选择品种" clearable @change="handleSearch">
+            <el-option label="狗" value="狗" />
+            <el-option label="猫" value="猫" />
+            <el-option label="其他" value="其他" />
+          </el-select>
         </el-form-item>
         <el-form-item label="领养状态">
-          <el-select v-model="searchForm.status" placeholder="请选择状态" clearable>
+          <el-select v-model="searchForm.status" placeholder="请选择状态" clearable @change="handleSearch">
             <el-option label="待领养" value="待领养" />
             <el-option label="已领养" value="已领养" />
           </el-select>
@@ -29,8 +36,29 @@
         <el-form-item label="宠物名称" prop="petName">
           <el-input v-model="form.petName" placeholder="请输入宠物名称" />
         </el-form-item>
-        <el-form-item label="品种ID" prop="breedId">
-          <el-input-number v-model="form.breedId" :min="1" placeholder="请选择品种" />
+        <el-form-item label="品种类型" prop="breedType">
+          <el-select v-model="form.breedType" placeholder="请选择品种类型" @change="handleBreedTypeChange">
+            <el-option label="狗" value="狗" />
+            <el-option label="猫" value="猫" />
+            <el-option label="其他" value="其他" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="品种名称" prop="breedName">
+          <el-select
+            v-model="form.breedName"
+            placeholder="请先选择品种类型"
+            :disabled="!form.breedType"
+            filterable
+            allow-create
+            default-first-option
+          >
+            <el-option
+              v-for="breed in filteredBreeds"
+              :key="breed.breedId"
+              :label="breed.breedName"
+              :value="breed.breedName"
+            />
+          </el-select>
         </el-form-item>
         <el-form-item label="年龄" prop="age">
           <el-input-number v-model="form.age" :min="0" placeholder="请输入年龄" />
@@ -44,11 +72,11 @@
         <el-form-item label="健康状况" prop="healthStatus">
           <el-input v-model="form.healthStatus" placeholder="请输入健康状况" />
         </el-form-item>
-        <el-form-item label="弃养原因" prop="abandonReason">
-          <el-input v-model="form.abandonReason" type="textarea" :rows="3" placeholder="请输入弃养原因" />
+        <el-form-item label="性格特点" prop="personality">
+          <el-input v-model="form.personality" type="textarea" :rows="3" placeholder="请输入性格特点，如：温顺、活泼等" />
         </el-form-item>
-        <el-form-item label="救助地址" prop="rescueAddress">
-          <el-input v-model="form.rescueAddress" placeholder="请输入救助地址" />
+        <el-form-item label="经历故事" prop="experience">
+          <el-input v-model="form.experience" type="textarea" :rows="4" placeholder="请输入宠物的经历故事" />
         </el-form-item>
         <el-form-item label="宠物照片" prop="petPhoto">
           <el-upload
@@ -102,8 +130,8 @@
             <h3 class="pet-name">{{ pet.petName }}</h3>
             <div class="pet-details">
               <div class="detail-item">
-                <span class="label">品种ID:</span>
-                <span>{{ pet.breedId }}</span>
+                <span class="label">品种:</span>
+                <span>{{ pet.breedType }} - {{ pet.breedName }}</span>
               </div>
               <div class="detail-item">
                 <span class="label">年龄:</span>
@@ -117,13 +145,13 @@
                 <span class="label">健康状况:</span>
                 <span>{{ pet.healthStatus }}</span>
               </div>
-              <div class="detail-item">
-                <span class="label">弃养原因:</span>
-                <span>{{ pet.abandonReason }}</span>
+              <div class="detail-item" v-if="pet.personality">
+                <span class="label">性格:</span>
+                <span>{{ pet.personality }}</span>
               </div>
-              <div class="detail-item">
-                <span class="label">救助地址:</span>
-                <span>{{ pet.rescueAddress }}</span>
+              <div class="detail-item" v-if="pet.experience">
+                <span class="label">经历:</span>
+                <span class="text-ellipsis">{{ pet.experience }}</span>
               </div>
               <div class="detail-item">
                 <span class="label">领养状态:</span>
@@ -157,16 +185,46 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
-import { getPetPage, deletePet, addPet, updatePet } from '@/api/abandonedPet'
+import { getPetPage, deletePet, addPet, updatePet, getBreedList, addBreed } from '@/api/abandonedPet'
 
 const uploadUrl = ref('/api/upload')
 
+const breedList = ref([])
+const breedTypes = ['狗', '猫', '其他']
+
+const filteredBreeds = computed(() => {
+  if (!form.breedType) return []
+  return breedList.value.filter(b => b.breedType === form.breedType)
+})
+
+const handleBreedTypeChange = () => {
+  form.breedName = ''
+}
+
+const getBreedName = (breedId) => {
+  const breed = breedList.value.find(b => b.breedId === breedId)
+  if (breed) {
+    return breed.breedType + ' - ' + breed.breedName
+  }
+  return '未知品种'
+}
+
+const loadBreedList = async () => {
+  try {
+    const res = await getBreedList()
+    breedList.value = res.data
+  } catch (error) {
+    // 错误信息已在响应拦截器中处理
+  }
+}
+
 const searchForm = reactive({
-  name: '',
-  status: ''
+  petName: '',
+  status: '',
+  breedType: ''
 })
 
 const tableData = ref([])
@@ -181,13 +239,14 @@ const dialogTitle = ref('')
 const formRef = ref(null)
 const form = reactive({
   petId: null,
-  breedId: null,
+  breedType: '',
+  breedName: '',
   petName: '',
   age: null,
   gender: '',
   healthStatus: '',
-  abandonReason: '',
-  rescueAddress: '',
+  personality: '',
+  experience: '',
   petPhoto: '',
   adoptStatus: '待领养',
   remark: ''
@@ -197,8 +256,11 @@ const formRules = {
   petName: [
     { required: true, message: '请输入宠物名称', trigger: 'blur' }
   ],
-  breedId: [
-    { required: true, message: '请选择品种', trigger: 'change' }
+  breedType: [
+    { required: true, message: '请选择品种类型', trigger: 'change' }
+  ],
+  breedName: [
+    { required: true, message: '请选择或输入品种名称', trigger: 'change' }
   ],
   age: [
     { required: true, message: '请输入年龄', trigger: 'blur' }
@@ -243,8 +305,9 @@ const loadData = async () => {
     const res = await getPetPage({
       current: pagination.currentPage,
       size: pagination.pageSize,
-      petName: searchForm.name,
-      adoptStatus: searchForm.status
+      petName: searchForm.petName,
+      adoptStatus: searchForm.status,
+      breedType: searchForm.breedType
     })
     tableData.value = res.data.records
     pagination.total = res.data.total
@@ -259,8 +322,9 @@ const handleSearch = () => {
 }
 
 const handleReset = () => {
-  searchForm.name = ''
+  searchForm.petName = ''
   searchForm.status = ''
+  searchForm.breedType = ''
   handleSearch()
 }
 
@@ -268,13 +332,14 @@ const handleAdd = () => {
   dialogTitle.value = '添加宠物'
   Object.assign(form, {
     petId: null,
-    breedId: null,
+    breedType: '',
+    breedName: '',
     petName: '',
     age: null,
     gender: '',
     healthStatus: '',
-    abandonReason: '',
-    rescueAddress: '',
+    personality: '',
+    experience: '',
     petPhoto: '',
     adoptStatus: '待领养',
     remark: ''
@@ -297,17 +362,30 @@ const handleSubmit = async () => {
   await formRef.value.validate(async (valid) => {
     if (valid) {
       try {
+        // 检查品种是否已存在，不存在则自动新增
+        const existingBreed = breedList.value.find(b => b.breedName === form.breedName && b.breedType === form.breedType)
+        let breedId = existingBreed ? existingBreed.breedId : null
+
+        if (!existingBreed) {
+          const breedRes = await addBreed({ breedName: form.breedName, breedType: form.breedType })
+          breedId = breedRes.data
+          await loadBreedList()
+        }
+
+        // 构建提交数据，用breedId替代breedName
+        const submitData = { ...form, breedId }
+
         if (form.petId) {
-          await updatePet(form)
+          await updatePet(submitData)
           ElMessage.success('更新成功')
         } else {
-          await addPet(form)
+          await addPet(submitData)
           ElMessage.success('添加成功')
         }
         dialogVisible.value = false
         loadData()
       } catch (error) {
-        // 错误信息已在 request.js 的响应拦截器中处理
+        // 错误信息已在响应拦截器中处理
       }
     }
   })
@@ -339,6 +417,7 @@ const handleCurrentChange = (val) => {
 }
 
 onMounted(() => {
+  loadBreedList()
   loadData()
 })
 </script>

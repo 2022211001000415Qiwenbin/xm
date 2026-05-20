@@ -6,6 +6,8 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.qwb.petmanage.entity.AdoptionApplication;
 import com.qwb.petmanage.mapper.AdoptionApplicationMapper;
 import com.qwb.petmanage.service.AdoptionApplicationService;
+import com.qwb.petmanage.service.PetService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -17,6 +19,9 @@ import java.time.LocalDateTime;
  */
 @Service
 public class AdoptionApplicationServiceImpl extends ServiceImpl<AdoptionApplicationMapper, AdoptionApplication> implements AdoptionApplicationService {
+
+    @Autowired
+    private PetService petService;
 
     @Override
     public Page<AdoptionApplication> pageList(Integer current, Integer size, String keyword, String status) {
@@ -69,7 +74,17 @@ public class AdoptionApplicationServiceImpl extends ServiceImpl<AdoptionApplicat
         application.setReviewer(reviewer);
         application.setRejectReason(rejectReason);
         application.setUpdateTime(LocalDateTime.now());
-        return updateById(application);
+        boolean updated = updateById(application);
+        // 审核通过时，联动更新宠物状态为"待领养"
+        if (updated && "审核通过".equals(status) && application.getPetId() != null) {
+            petService.updateAdoptStatus(application.getPetId().intValue(), "待领养");
+        }
+        // 审核拒绝时，如果之前是审核通过状态，需要将宠物状态恢复为"待领养"
+        if (updated && "审核拒绝".equals(status) && application.getPetId() != null) {
+            // 检查是否从审核通过变为拒绝，如果是则恢复宠物状态
+            petService.updateAdoptStatus(application.getPetId().intValue(), "待领养");
+        }
+        return updated;
     }
 
     @Override
@@ -83,7 +98,12 @@ public class AdoptionApplicationServiceImpl extends ServiceImpl<AdoptionApplicat
         // 设置回访日期为领养后一个月
         application.setReturnVisitDate(LocalDate.now().plusMonths(1));
         application.setUpdateTime(LocalDateTime.now());
-        return updateById(application);
+        boolean updated = updateById(application);
+        // 完成领养时，联动更新宠物状态为"已领养"
+        if (updated && application.getPetId() != null) {
+            petService.updateAdoptStatus(application.getPetId().intValue(), "已领养");
+        }
+        return updated;
     }
 
     @Override
@@ -92,9 +112,16 @@ public class AdoptionApplicationServiceImpl extends ServiceImpl<AdoptionApplicat
         if (application == null) {
             return false;
         }
+        String previousStatus = application.getStatus();
         application.setStatus("已取消");
         application.setUpdateTime(LocalDateTime.now());
-        return updateById(application);
+        boolean updated = updateById(application);
+        // 取消申请时，如果之前是审核通过或已领养状态，需要将宠物状态恢复为"待领养"
+        if (updated && application.getPetId() != null
+                && ("审核通过".equals(previousStatus) || "已领养".equals(previousStatus))) {
+            petService.updateAdoptStatus(application.getPetId().intValue(), "待领养");
+        }
+        return updated;
     }
 
     @Override

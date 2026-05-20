@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.qwb.petmanage.common.Result;
 import com.qwb.petmanage.entity.User;
+import com.qwb.petmanage.service.AdoptApplyService;
+import com.qwb.petmanage.service.PetReserveService;
 import com.qwb.petmanage.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.DigestUtils;
@@ -19,6 +21,12 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private AdoptApplyService adoptApplyService;
+
+    @Autowired
+    private PetReserveService petReserveService;
 
     /**
      * 分页查询用户列表
@@ -87,11 +95,43 @@ public class UserController {
     }
 
     /**
-     * 删除用户
+     * 删除用户（同时删除关联的领养申请和预约记录）
      */
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable Long id) {
+        // 删除该用户的领养申请
+        QueryWrapper<com.qwb.petmanage.entity.AdoptApply> applyQueryWrapper = new QueryWrapper<>();
+        applyQueryWrapper.eq("user_id", id);
+        adoptApplyService.remove(applyQueryWrapper);
+
+        // 删除该用户的预约记录
+        QueryWrapper<com.qwb.petmanage.entity.PetReserve> reserveQueryWrapper = new QueryWrapper<>();
+        reserveQueryWrapper.eq("user_id", id);
+        petReserveService.remove(reserveQueryWrapper);
+
+        // 删除用户
         userService.removeById(id);
+        return Result.success();
+    }
+
+    /**
+     * 管理员重置用户密码
+     * @param params 包含userId和newPassword
+     */
+    @PostMapping("/reset-password")
+    public Result<Void> resetPassword(@RequestBody java.util.Map<String, String> params) {
+        Long userId = Long.parseLong(params.get("userId"));
+        String newPassword = params.get("newPassword");
+
+        User user = userService.getById(userId);
+        if (user == null) {
+            return Result.error("用户不存在");
+        }
+
+        // MD5加密新密码
+        String md5NewPassword = DigestUtils.md5DigestAsHex(newPassword.getBytes());
+        user.setPassword(md5NewPassword);
+        userService.updateById(user);
         return Result.success();
     }
 

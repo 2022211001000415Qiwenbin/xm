@@ -31,8 +31,9 @@ public class PetController {
     public Result<Page<Pet>> page(@RequestParam(defaultValue = "1") Integer current,
                                    @RequestParam(defaultValue = "10") Integer size,
                                    @RequestParam(required = false) String petName,
-                                   @RequestParam(required = false) String adoptStatus) {
-        Page<Pet> page = petService.pageList(current, size, petName, adoptStatus);
+                                   @RequestParam(required = false) String adoptStatus,
+                                   @RequestParam(required = false) String breedType) {
+        Page<Pet> page = petService.pageList(current, size, petName, adoptStatus, breedType);
         return Result.success(page);
     }
 
@@ -72,7 +73,7 @@ public class PetController {
     @Operation(summary = "获取宠物详情")
     @GetMapping("/detail/{id}")
     public Result<Pet> detail(@PathVariable Integer id) {
-        Pet pet = petService.getById(id);
+        Pet pet = petService.getPetDetail(id);
         return Result.success(pet);
     }
     

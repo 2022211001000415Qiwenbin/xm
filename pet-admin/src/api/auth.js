@@ -42,8 +42,8 @@ export function getUserInfo() {
  * @param {string} data.realName - 真实姓名
  * @param {string} data.phone - 手机号
  * @param {string} data.idCard - 身份证号（必填）
- * @param {string} data.address - 地址（可选）
- * @param {string} data.petExperience - 养宠经历（可选）
+ * @param {string} data.address - 地址（必填）
+ * @param {string} data.petExperience - 养宠经历（必填）
  */
 export function register(data) {
   return request({

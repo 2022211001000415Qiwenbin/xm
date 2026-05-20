@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 @TableName("pet_breed")
 public class PetBreed {
     @TableId(type = IdType.AUTO)
-    private Long breedId;
+    private Integer breedId;
 
     private String breedName;
 

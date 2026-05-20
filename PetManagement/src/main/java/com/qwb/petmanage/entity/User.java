@@ -28,6 +28,8 @@ public class User {
 
     private String petExperience;
 
+    private String avatar;
+
     private LocalDateTime createTime;
 
     private LocalDateTime updateTime;

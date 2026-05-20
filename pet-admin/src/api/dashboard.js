@@ -30,3 +30,13 @@ export function getPetTypeDistribution() {
     method: 'get'
   })
 }
+
+/**
+ * 获取最新动态
+ */
+export function getRecentActivities() {
+  return request({
+    url: '/dashboard/recent-activities',
+    method: 'get'
+  })
+}

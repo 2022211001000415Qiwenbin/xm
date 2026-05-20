@@ -39,9 +39,8 @@
       <el-table :data="tableData" stripe border style="width: 100%">
         <el-table-column prop="reserveId" label="ID" width="80" />
         <el-table-column prop="userId" label="用户ID" width="100" />
-        <el-table-column prop="petId" label="宠物ID" width="100" />
+        <el-table-column prop="petName" label="宠物姓名" width="120" />
         <el-table-column prop="reserveTime" label="预约时间" width="160" />
-        <el-table-column prop="reserveAddress" label="预约地址" width="200" show-overflow-tooltip />
         <el-table-column prop="contactPerson" label="联系人" width="120" />
         <el-table-column prop="contactPhone" label="联系电话" width="130" />
         <el-table-column prop="reserveStatus" label="预约状态" width="100">
@@ -109,9 +108,8 @@
       <el-descriptions :column="2" border>
         <el-descriptions-item label="预约ID">{{ currentAppointment.reserveId }}</el-descriptions-item>
         <el-descriptions-item label="用户ID">{{ currentAppointment.userId }}</el-descriptions-item>
-        <el-descriptions-item label="宠物ID">{{ currentAppointment.petId }}</el-descriptions-item>
+        <el-descriptions-item label="宠物姓名">{{ currentAppointment.petName }}</el-descriptions-item>
         <el-descriptions-item label="预约时间">{{ currentAppointment.reserveTime }}</el-descriptions-item>
-        <el-descriptions-item label="预约地址">{{ currentAppointment.reserveAddress }}</el-descriptions-item>
         <el-descriptions-item label="联系人">{{ currentAppointment.contactPerson }}</el-descriptions-item>
         <el-descriptions-item label="联系电话">{{ currentAppointment.contactPhone }}</el-descriptions-item>
         <el-descriptions-item label="预约状态">

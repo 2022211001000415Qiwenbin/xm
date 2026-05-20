@@ -47,7 +47,7 @@ public class AuthController {
 
         if (admin != null) {
             Map<String, Object> data = new HashMap<>();
-            data.put("token", "admin-token-" + admin.getAdminName());
+            data.put("token", "admin-token-" + admin.getAdminId());
             data.put("username", admin.getAdminName());
             data.put("realName", admin.getRealName());
             data.put("role", "admin");
@@ -63,11 +63,12 @@ public class AuthController {
 
         if (user != null) {
             Map<String, Object> data = new HashMap<>();
-            data.put("token", "user-token-" + user.getUsername());
+            data.put("token", "user-token-" + user.getUserId());
             data.put("username", user.getUsername());
             data.put("realName", user.getRealName());
             data.put("role", "user");
             data.put("userId", user.getUserId());
+            data.put("avatar", user.getAvatar());
             return Result.success(data);
         }
 
@@ -114,39 +115,54 @@ public class AuthController {
     public Result<Map<String, Object>> getUserInfo(@RequestHeader(value = "Authorization", required = false) String token) {
         Map<String, Object> data = new HashMap<>();
 
+        // 对 token 进行 URL 解码处理（前端可能对包含特殊字符的 token 进行了编码）
+        if (token != null) {
+            try {
+                token = java.net.URLDecoder.decode(token, "UTF-8");
+            } catch (Exception e) {
+                // 解码失败，使用原始 token
+            }
+        }
+
         // 根据token判断用户类型
         if (token != null && token.startsWith("Bearer admin-token-")) {
             // 管理员信息
-            String adminName = token.substring("Bearer admin-token-".length());
-            QueryWrapper<Admin> queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("admin_name", adminName);
-            Admin admin = adminService.getOne(queryWrapper);
+            String adminIdStr = token.substring("Bearer admin-token-".length());
+            try {
+                Long adminId = Long.parseLong(adminIdStr);
+                Admin admin = adminService.getById(adminId);
 
-            if (admin != null) {
-                data.put("username", admin.getAdminName());
-                data.put("realName", admin.getRealName());
-                data.put("role", "admin");
-                data.put("adminId", admin.getAdminId());
-                data.put("phone", admin.getPhone());
-                data.put("avatar", "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png");
+                if (admin != null) {
+                    data.put("username", admin.getAdminName());
+                    data.put("realName", admin.getRealName());
+                    data.put("role", "admin");
+                    data.put("adminId", admin.getAdminId());
+                    data.put("phone", admin.getPhone());
+                    data.put("avatar", "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png");
+                }
+            } catch (NumberFormatException e) {
+                // token格式无效
             }
         } else if (token != null && token.startsWith("Bearer user-token-")) {
             // 普通用户信息
-            String username = token.substring("Bearer user-token-".length());
-            QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-            queryWrapper.eq("username", username);
-            User user = userService.getOne(queryWrapper);
+            String userIdStr = token.substring("Bearer user-token-".length());
+            try {
+                Long userId = Long.parseLong(userIdStr);
+                User user = userService.getById(userId);
 
-            if (user != null) {
-                data.put("username", user.getUsername());
-                data.put("realName", user.getRealName());
-                data.put("role", "user");
-                data.put("userId", user.getUserId());
-                data.put("idCard", user.getIdCard());
-                data.put("phone", user.getPhone());
-                data.put("address", user.getAddress());
-                data.put("petExperience", user.getPetExperience());
-                data.put("avatar", "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png");
+                if (user != null) {
+                    data.put("username", user.getUsername());
+                    data.put("realName", user.getRealName());
+                    data.put("role", "user");
+                    data.put("userId", user.getUserId());
+                    data.put("idCard", user.getIdCard());
+                    data.put("phone", user.getPhone());
+                    data.put("address", user.getAddress());
+                    data.put("petExperience", user.getPetExperience());
+                    data.put("avatar", user.getAvatar() != null ? user.getAvatar() : "https://cube.elemecdn.com/0/88/03b0d39583f48206768a7534e55bcpng.png");
+                }
+            } catch (NumberFormatException e) {
+                // token格式无效
             }
         }
 
@@ -173,6 +189,7 @@ public class AuthController {
             user.setIdCard(params.get("idCard"));
             user.setAddress(params.get("address"));
             user.setPetExperience(params.get("petExperience"));
+            user.setAvatar(params.get("avatar"));
 
             userService.updateById(user);
             return Result.success();

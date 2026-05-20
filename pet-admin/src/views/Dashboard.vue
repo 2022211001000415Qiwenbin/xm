@@ -7,7 +7,8 @@
             <el-icon :size="30"><Box /></el-icon>
           </div>
           <div class="stat-content">
-            <div class="stat-label">宠物</div>
+            <div class="stat-value">{{ stats.totalPets }}</div>
+            <div class="stat-label">宠物总数</div>
           </div>
         </div>
       </el-col>
@@ -17,7 +18,8 @@
             <el-icon :size="30"><Clock /></el-icon>
           </div>
           <div class="stat-content">
-            <div class="stat-label">审核申请</div>
+            <div class="stat-value">{{ stats.pendingApplications }}</div>
+            <div class="stat-label">待审核申请</div>
           </div>
         </div>
       </el-col>
@@ -27,7 +29,8 @@
             <el-icon :size="30"><Calendar /></el-icon>
           </div>
           <div class="stat-content">
-            <div class="stat-label">预约</div>
+            <div class="stat-value">{{ stats.todayAppointments }}</div>
+            <div class="stat-label">今日预约</div>
           </div>
         </div>
       </el-col>
@@ -64,6 +67,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Box, CircleCheck, Clock, Calendar } from '@element-plus/icons-vue'
+import { getDashboardStats, getRecentActivities } from '@/api/dashboard'
 
 const router = useRouter()
 
@@ -78,35 +82,7 @@ const navigateTo = (path) => {
   router.push(path)
 }
 
-
-
-const recentActivities = ref([
-  {
-    time: '2024-01-15 10:30',
-    type: '领养',
-    description: '用户张三成功领养了一只名为"小白"的宠物'
-  },
-  {
-    time: '2024-01-15 09:15',
-    type: '预约',
-    description: '用户李四预约了今天下午3点来参观宠物'
-  },
-  {
-    time: '2024-01-14 16:45',
-    type: '申请',
-    description: '收到新的领养申请，待审核'
-  },
-  {
-    time: '2024-01-14 14:20',
-    type: '登记',
-    description: '新登记了一只名为"小黑"的宠物'
-  },
-  {
-    time: '2024-01-14 11:00',
-    type: '领养',
-    description: '用户王五成功领养了一只名为"花花"的宠物'
-  }
-])
+const recentActivities = ref([])
 
 const getActivityType = (type) => {
   const typeMap = {
@@ -119,17 +95,35 @@ const getActivityType = (type) => {
 }
 
 const loadStats = async () => {
-  // 模拟数据加载，实际项目中应该调用API
-  stats.value = {
-    totalPets: 128,
-    adoptedPets: 56,
-    pendingApplications: 12,
-    todayAppointments: 8
+  try {
+    const res = await getDashboardStats()
+    if (res.data) {
+      stats.value = {
+        totalPets: res.data.totalPets || 0,
+        adoptedPets: res.data.adoptedPets || 0,
+        pendingApplications: res.data.pendingApplications || 0,
+        todayAppointments: res.data.todayAppointments || 0
+      }
+    }
+  } catch (error) {
+    // 错误信息已在 request.js 的响应拦截器中处理
+  }
+}
+
+const loadRecentActivities = async () => {
+  try {
+    const res = await getRecentActivities()
+    if (res.data) {
+      recentActivities.value = res.data
+    }
+  } catch (error) {
+    // 错误信息已在 request.js 的响应拦截器中处理
   }
 }
 
 onMounted(() => {
   loadStats()
+  loadRecentActivities()
 })
 </script>
 
@@ -164,10 +158,16 @@ onMounted(() => {
     .stat-content {
       flex: 1;
 
-      .stat-label {
-        font-size: 16px;
-        color: #303133;
+      .stat-value {
+        font-size: 28px;
         font-weight: bold;
+        color: #303133;
+      }
+
+      .stat-label {
+        font-size: 14px;
+        color: #909399;
+        margin-top: 4px;
       }
     }
   }
