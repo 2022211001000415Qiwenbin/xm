@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.qwb.petmanage.mapper.AdoptApplyMapper">
+
+    <select id="selectApplyPage" resultType="com.qwb.petmanage.entity.AdoptApply">
+        SELECT a.*,
+               a.applicant_name,
+               a.applicant_phone,
+               a.applicant_occupation,
+               a.applicant_address,
+               a.applicant_experience,
+               u.real_name,
+               u.phone,
+               p.pet_name,
+               b.breed_name,
+               p.pet_photo,
+               p.adopt_status,
+               ad.admin_name
+        FROM adopt_apply a
+        LEFT JOIN user u ON a.user_id = u.user_id
+        LEFT JOIN pet p ON a.pet_id = p.pet_id
+        LEFT JOIN pet_breed b ON p.breed_id = b.breed_id
+        LEFT JOIN admin ad ON a.audit_admin = ad.admin_id
+        WHERE 1=1
+        <if test="auditStatus != null and auditStatus != ''">
+            AND a.audit_status = #{auditStatus}
+        </if>
+        <if test="realName != null and realName != ''">
+            AND u.real_name LIKE CONCAT('%', #{realName}, '%')
+        </if>
+        ORDER BY a.apply_time DESC
+    </select>
+
+</mapper>

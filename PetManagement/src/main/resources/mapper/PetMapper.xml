@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.qwb.petmanage.mapper.PetMapper">
+
+    <select id="selectPetPage" resultType="com.qwb.petmanage.entity.Pet">
+        SELECT p.*, b.breed_type, b.breed_name
+        FROM pet p
+        LEFT JOIN pet_breed b ON p.breed_id = b.breed_id
+        WHERE 1=1
+        <if test="petName != null and petName != ''">
+            AND p.pet_name LIKE CONCAT('%', #{petName}, '%')
+        </if>
+        <if test="adoptStatus != null and adoptStatus != ''">
+            AND p.adopt_status = #{adoptStatus}
+        </if>
+        <if test="breedType != null and breedType != ''">
+            AND b.breed_type = #{breedType}
+        </if>
+        ORDER BY p.create_time DESC
+    </select>
+
+    <select id="selectPetDetail" resultType="com.qwb.petmanage.entity.Pet">
+        SELECT p.*, b.breed_type, b.breed_name
+        FROM pet p
+        LEFT JOIN pet_breed b ON p.breed_id = b.breed_id
+        WHERE p.pet_id = #{petId}
+    </select>
+
+</mapper>

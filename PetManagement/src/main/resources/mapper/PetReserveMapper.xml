@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.qwb.petmanage.mapper.PetReserveMapper">
+
+    <select id="selectReservePage" resultType="com.qwb.petmanage.entity.PetReserve">
+        SELECT r.*,
+               p.pet_name,
+               u.real_name
+        FROM pet_reserve r
+        LEFT JOIN pet p ON r.pet_id = p.pet_id
+        LEFT JOIN user u ON r.user_id = u.user_id
+        WHERE 1=1
+        <if test="reserveStatus != null and reserveStatus != ''">
+            AND r.reserve_status = #{reserveStatus}
+        </if>
+        <if test="userId != null">
+            AND r.user_id = #{userId}
+        </if>
+        <if test="petId != null">
+            AND r.pet_id = #{petId}
+        </if>
+        <if test="realName != null and realName != ''">
+            AND u.real_name LIKE CONCAT('%', #{realName}, '%')
+        </if>
+        ORDER BY r.create_time DESC
+    </select>
+
+</mapper>
