@@ -176,21 +176,73 @@ onMounted(() => {
 
 <style scoped lang="scss">
 .feedback-container {
-  padding: 20px;
 
-  .submit-card {
-    margin-bottom: 20px;
+  .page-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: #1F2937;
+    margin: 0 0 24px;
   }
 
-  .card-header {
-    font-size: 16px;
-    font-weight: 600;
+  .submit-card {
+    margin-bottom: 24px;
+    border-radius: 16px;
+    border: 1px solid #F3F4F6;
+
+    .card-header {
+      font-size: 18px;
+      font-weight: 700;
+      color: #1F2937;
+    }
+
+    :deep(.el-button--primary) {
+      background: linear-gradient(135deg, #FF8A65, #FF6B35);
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+    }
+
+    :deep(.el-button--default) {
+      border-radius: 10px;
+    }
+
+    :deep(.el-input__wrapper),
+    :deep(.el-textarea__inner) {
+      border-radius: 10px;
+    }
+  }
+
+  .list-card {
+    border-radius: 16px;
+    border: 1px solid #F3F4F6;
+
+    .card-header {
+      font-size: 18px;
+      font-weight: 700;
+      color: #1F2937;
+    }
+
+    :deep(.el-table) {
+      border-radius: 12px;
+      overflow: hidden;
+
+      th.el-table__cell {
+        background: #FAFAF8;
+        color: #6B7280;
+        font-weight: 600;
+      }
+    }
   }
 
   .pagination-wrapper {
     display: flex;
-    justify-content: flex-end;
-    margin-top: 16px;
+    justify-content: center;
+    margin-top: 20px;
+
+    :deep(.el-pager li.is-active) {
+      background: linear-gradient(135deg, #FF8A65, #FF6B35);
+      border-radius: 8px;
+    }
   }
 }
 </style>

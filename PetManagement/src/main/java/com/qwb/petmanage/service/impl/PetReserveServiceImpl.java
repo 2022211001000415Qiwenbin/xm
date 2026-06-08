@@ -20,4 +20,46 @@ public class PetReserveServiceImpl extends ServiceImpl<PetReserveMapper, PetRese
         page.setRecords(records);
         return page;
     }
+
+    @Override
+    public void submitReserve(PetReserve petReserve) {
+        petReserve.setReserveStatus("待确认");
+        petReserve.setCreateTime(java.time.LocalDateTime.now());
+        save(petReserve);
+    }
+
+    @Override
+    public void confirmReserve(Long reserveId, Long confirmAdmin) {
+        PetReserve petReserve = getById(reserveId);
+        if (petReserve == null) {
+            throw new RuntimeException("预约记录不存在");
+        }
+        petReserve.setReserveStatus("已确认");
+        petReserve.setConfirmAdmin(confirmAdmin);
+        petReserve.setUpdateTime(java.time.LocalDateTime.now());
+        updateById(petReserve);
+    }
+
+    @Override
+    public void cancelReserve(Long id, String cancelReason) {
+        PetReserve petReserve = getById(id);
+        if (petReserve == null) {
+            throw new RuntimeException("预约记录不存在");
+        }
+        petReserve.setReserveStatus("已取消");
+        petReserve.setReserveRemark(cancelReason);
+        petReserve.setUpdateTime(java.time.LocalDateTime.now());
+        updateById(petReserve);
+    }
+
+    @Override
+    public void completeReserve(Long id) {
+        PetReserve petReserve = getById(id);
+        if (petReserve == null) {
+            throw new RuntimeException("预约记录不存在");
+        }
+        petReserve.setReserveStatus("已完成");
+        petReserve.setUpdateTime(java.time.LocalDateTime.now());
+        updateById(petReserve);
+    }
 }

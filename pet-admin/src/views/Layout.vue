@@ -3,8 +3,8 @@
     <el-container>
       <el-aside :width="isCollapse ? '64px' : '220px'" class="sidebar">
         <div class="logo-container">
-          <span v-if="!isCollapse" class="logo-text">{{ isUser ? '宠物领养平台' : '宠物管理系统' }}</span>
-          <span v-else class="logo-text-short">{{ isUser ? 'Pet' : 'CMS' }}</span>
+          <span v-if="!isCollapse" class="logo-text">宠物管理平台</span>
+          <span v-else class="logo-text-short">Pet</span>
         </div>
         <el-menu
           :default-active="activeMenu"
@@ -66,6 +66,7 @@ import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { logout } from '@/api/auth'
 
 const route = useRoute()
 const router = useRouter()
@@ -100,6 +101,10 @@ const menuRoutes = computed(() => {
         meta: { title: '我的预约', icon: 'Calendar' }
       },
       {
+        path: '/user/foster',
+        meta: { title: '我的寄养', icon: 'Van' }
+      },
+      {
         path: '/user/knowledge',
         meta: { title: '宠物知识', icon: 'Reading' }
       },
@@ -121,7 +126,7 @@ const menuRoutes = computed(() => {
       },
       {
         path: '/abandoned-pet',
-        meta: { title: '弃养宠物管理', icon: 'List' }
+        meta: { title: '宠物管理', icon: 'List' }
       },
       {
         path: '/adoption-application',
@@ -130,6 +135,10 @@ const menuRoutes = computed(() => {
       {
         path: '/appointment',
         meta: { title: '预约管理', icon: 'Calendar' }
+      },
+      {
+        path: '/foster-manage',
+        meta: { title: '寄养管理', icon: 'Van' }
       },
       {
         path: '/knowledge-manage',
@@ -160,7 +169,8 @@ const handleCommand = async (command) => {
         type: 'warning'
       })
 
-      await store.dispatch('logout')
+      await logout()
+      store.dispatch('logout')
       ElMessage.success('已退出登录')
       router.push('/login')
     } catch (error) {
@@ -268,5 +278,37 @@ const handleCommand = async (command) => {
   background-color: #f5f7fa;
   padding: 20px;
   overflow-y: auto;
+}
+
+// 管理员端按钮恢复为白色默认样式
+:deep(.el-button--primary) {
+  background: #fff !important;
+  border: 1px solid #dcdfe6 !important;
+  color: #606266 !important;
+  font-weight: 500;
+
+  &:hover,
+  &:focus {
+    background: #ecf5ff !important;
+    border-color: #c6e2ff !important;
+    color: #409eff !important;
+  }
+
+  &:active {
+    background: #d9ecff !important;
+    border-color: #409eff !important;
+    color: #409eff !important;
+  }
+}
+
+:deep(.el-button--primary.is-link),
+:deep(.el-button--primary.is-text) {
+  background: transparent !important;
+  border: none !important;
+  color: #409eff !important;
+
+  &:hover {
+    color: #66b1ff !important;
+  }
 }
 </style>

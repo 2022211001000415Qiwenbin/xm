@@ -4,6 +4,7 @@ export default createStore({
   state: {
     user: {
       token: localStorage.getItem('token') || '',
+      refreshToken: localStorage.getItem('refreshToken') || '',
       username: localStorage.getItem('username') || '',
       role: localStorage.getItem('role') || '',
       userId: localStorage.getItem('userId') || '',
@@ -32,13 +33,19 @@ export default createStore({
       state.user.avatar = avatar
       localStorage.setItem('avatar', avatar)
     },
+    SET_REFRESH_TOKEN(state, refreshToken) {
+      state.user.refreshToken = refreshToken
+      localStorage.setItem('refreshToken', refreshToken)
+    },
     CLEAR_USER(state) {
       state.user.token = ''
+      state.user.refreshToken = ''
       state.user.username = ''
       state.user.role = ''
       state.user.userId = ''
       state.user.avatar = ''
       localStorage.removeItem('token')
+      localStorage.removeItem('refreshToken')
       localStorage.removeItem('username')
       localStorage.removeItem('role')
       localStorage.removeItem('userId')
@@ -49,12 +56,17 @@ export default createStore({
     }
   },
   actions: {
-    login({ commit }, { token, username, role, userId, avatar }) {
+    login({ commit }, { token, refreshToken, username, role, userId, avatar }) {
       commit('SET_TOKEN', token)
+      if (refreshToken) commit('SET_REFRESH_TOKEN', refreshToken)
       commit('SET_USERNAME', username)
       commit('SET_ROLE', role)
       commit('SET_USER_ID', userId)
       if (avatar) commit('SET_AVATAR', avatar)
+    },
+    refreshToken({ commit }, { token, refreshToken }) {
+      commit('SET_TOKEN', token)
+      if (refreshToken) commit('SET_REFRESH_TOKEN', refreshToken)
     },
     logout({ commit }) {
       commit('CLEAR_USER')

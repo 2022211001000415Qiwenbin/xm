@@ -1,6 +1,7 @@
 
 package com.qwb.petmanage.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.qwb.petmanage.entity.User;
 
@@ -34,4 +35,39 @@ public interface UserService extends IService<User> {
      * @return 用户对象
      */
     User getByIdCard(String idCard);
+
+    /**
+     * 分页查询用户列表
+     * @param current 当前页
+     * @param size 每页大小
+     * @param realName 真实姓名（模糊查询）
+     * @param phone 手机号（模糊查询）
+     * @return 分页结果
+     */
+    Page<User> pageList(Integer current, Integer size, String realName, String phone);
+
+    /**
+     * 新增用户（含查重和MD5加密）
+     * @param user 用户信息
+     */
+    void addUser(User user);
+
+    /**
+     * 修改用户（含MD5加密）
+     * @param user 用户信息
+     */
+    void updateUser(User user);
+
+    /**
+     * 删除用户（级联删除领养申请和预约记录）
+     * @param id 用户ID
+     */
+    void deleteUser(Long id);
+
+    /**
+     * 重置用户密码
+     * @param userId 用户ID
+     * @param newPassword 新密码
+     */
+    void resetPassword(Long userId, String newPassword);
 }

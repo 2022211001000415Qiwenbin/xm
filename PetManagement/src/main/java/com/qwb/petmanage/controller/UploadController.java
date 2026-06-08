@@ -2,15 +2,12 @@
 package com.qwb.petmanage.controller;
 
 import com.qwb.petmanage.common.Result;
+import com.qwb.petmanage.service.OssService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.UUID;
 
 /**
  * 文件上传控制器
@@ -20,8 +17,8 @@ import java.util.UUID;
 @RequestMapping("/upload")
 public class UploadController {
 
-    @Value("${upload.path:D:/upload}")
-    private String uploadPath;
+    @Autowired
+    private OssService ossService;
 
     /**
      * 上传图片
@@ -39,26 +36,15 @@ public class UploadController {
             return Result.error("只能上传图片文件");
         }
 
+        // 限制文件大小（5MB）
+        if (file.getSize() > 5 * 1024 * 1024) {
+            return Result.error("图片大小不能超过5MB");
+        }
+
         try {
-            // 创建上传目录
-            File uploadDir = new File(uploadPath);
-            if (!uploadDir.exists()) {
-                uploadDir.mkdirs();
-            }
-
-            // 生成唯一文件名
-            String originalFilename = file.getOriginalFilename();
-            String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
-            String filename = UUID.randomUUID().toString() + extension;
-
-            // 保存文件
-            File destFile = new File(uploadDir, filename);
-            file.transferTo(destFile);
-
-            // 返回文件访问路径
-            String fileUrl = "http://localhost:8080/pet-api/images/" + filename;
+            String fileUrl = ossService.uploadFile(file);
             return Result.success(fileUrl);
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return Result.error("文件上传失败：" + e.getMessage());
         }

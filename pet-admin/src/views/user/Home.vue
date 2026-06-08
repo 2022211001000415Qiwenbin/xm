@@ -1,467 +1,307 @@
 <template>
   <div class="home-container">
-    <el-card class="search-card">
-      <el-form :model="searchForm" inline>
-        <el-form-item label="品种">
-          <el-select v-model="searchForm.breedType" placeholder="请选择品种" clearable @change="handleSearch">
-            <el-option label="狗" value="狗" />
-            <el-option label="猫" value="猫" />
-            <el-option label="其他" value="其他" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="领养状态">
-          <el-select v-model="searchForm.adoptStatus" placeholder="请选择状态" clearable @change="handleSearch">
-            <el-option label="待领养" value="待领养" />
-            <el-option label="已领养" value="已领养" />
-          </el-select>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="handleSearch">搜索</el-button>
-          <el-button @click="handleReset">重置</el-button>
-        </el-form-item>
-      </el-form>
-    </el-card>
-
-    <el-card class="pet-list-card">
-      <template #header>
-        <div class="card-header">
-          <span>待领养宠物</span>
-        </div>
-      </template>
-      <el-row :gutter="20">
-        <el-col v-for="pet in tableData" :key="pet.petId" :xs="24" :sm="12" :md="8" :lg="6">
-          <el-card class="pet-card" shadow="hover">
-            <div class="pet-image">
-              <el-image
-                :src="pet.petPhoto || 'https://via.placeholder.com/300x200?text=' + pet.petName"
-                fit="cover"
-              />
-            </div>
-            <div class="pet-info">
-              <h3>{{ pet.petName }}</h3>
-              <div class="pet-details">
-                <p><span class="label">品种：</span>{{ pet.breedType }} - {{ pet.breedName }}</p>
-                <p><span class="label">年龄：</span>{{ pet.age }}岁</p>
-                <p><span class="label">性别：</span>{{ pet.gender }}</p>
-                <p><span class="label">健康状况：</span>{{ pet.healthStatus }}</p>
-              </div>
-              <div class="pet-status">
-                <el-tag :type="pet.adoptStatus === '已领养' ? 'success' : 'warning'">
-                  {{ pet.adoptStatus }}
-                </el-tag>
-              </div>
-              <div class="pet-actions">
-                <el-button type="primary" size="small" @click="handleViewDetail(pet)">查看详情</el-button>
-                <el-button
-                  v-if="pet.adoptStatus === '待领养'"
-                  type="success"
-                  size="small"
-                  @click="handleAdopt(pet)"
-                >
-                  申请领养
-                </el-button>
-                <el-button
-                  v-if="pet.adoptStatus === '待领养'"
-                  type="info"
-                  size="small"
-                  @click="handleReserve(pet)"
-                >
-                  预约看宠
-                </el-button>
-              </div>
-            </div>
-          </el-card>
-        </el-col>
-      </el-row>
-
-      <div class="pagination-container">
-        <el-pagination
-          v-model:current-page="pagination.currentPage"
-          v-model:page-size="pagination.pageSize"
-          :page-sizes="[12, 24, 36, 48]"
-          :total="pagination.total"
-          layout="total, sizes, prev, pager, next, jumper"
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
-        />
+    <!-- 顶部横幅 -->
+    <div class="hero-banner">
+      <div class="hero-content">
+        <h1>给它们一个温暖的家</h1>
+        <p>每一只小生命都值得被温柔以待，在这里遇见你的毛茸伙伴</p>
       </div>
-    </el-card>
+      <div class="hero-filter">
+        <el-select v-model="searchForm.breedType" placeholder="选择品种类型" clearable @change="handleSearch" size="large">
+          <el-option label="🐶 狗狗" value="狗" />
+          <el-option label="🐱 猫咪" value="猫" />
+          <el-option label="🐹 其他" value="其他" />
+        </el-select>
+        <el-select v-model="searchForm.adoptStatus" placeholder="领养状态" clearable @change="handleSearch" size="large">
+          <el-option label="待领养" value="待领养" />
+          <el-option label="已领养" value="已领养" />
+        </el-select>
+        <el-button size="large" class="filter-btn" @click="handleReset">重置</el-button>
+      </div>
+    </div>
 
+    <!-- 宠物卡片列表 -->
+    <div class="pet-grid" v-loading="loading">
+      <div v-for="pet in tableData" :key="pet.petId" class="pet-card" @click="handleViewDetail(pet)">
+        <div class="pet-image">
+          <el-image :src="pet.petPhoto || 'https://via.placeholder.com/400x300?text=' + pet.petName" fit="cover" />
+          <div class="pet-badge" :class="pet.adoptStatus === '已领养' ? 'adopted' : 'available'">
+            {{ pet.adoptStatus }}
+          </div>
+        </div>
+        <div class="pet-body">
+          <div class="pet-header">
+            <h3>{{ pet.petName }}</h3>
+            <span class="pet-type">{{ pet.breedType }}</span>
+          </div>
+          <div class="pet-meta">
+            <span><el-icon><Clock /></el-icon>{{ pet.age }}岁</span>
+            <span><el-icon><Male v-if="pet.gender==='公'" /><Female v-else /></el-icon>{{ pet.gender }}</span>
+            <span :class="'health-' + pet.healthStatus">{{ pet.healthStatus }}</span>
+          </div>
+          <div class="pet-breed">{{ pet.breedName }}</div>
+        </div>
+        <div class="pet-actions" v-if="pet.adoptStatus === '待领养'">
+          <el-button type="primary" class="action-btn adopt-btn" @click.stop="handleAdopt(pet)">申请领养</el-button>
+          <el-button class="action-btn reserve-btn" @click.stop="handleReserve(pet)">预约看宠</el-button>
+        </div>
+      </div>
+    </div>
 
+    <el-empty v-if="!loading && tableData.length === 0" description="暂无宠物信息" />
 
-    <!-- 领养申请对话框 -->
-    <el-dialog
-      v-model="adoptDialogVisible"
-      title="申请领养"
-      width="500px"
-    >
-      <el-form ref="adoptFormRef" :model="adoptForm" :rules="adoptRules" label-width="100px">
-        <el-form-item label="宠物名称">
-          <el-input v-model="currentPet.petName" disabled />
-        </el-form-item>
-        <el-form-item label="姓名" prop="applicantName">
-          <el-input v-model="adoptForm.applicantName" placeholder="请输入您的姓名" />
-        </el-form-item>
-        <el-form-item label="联系方式" prop="applicantPhone">
-          <el-input v-model="adoptForm.applicantPhone" placeholder="请输入您的联系方式" maxlength="11" />
-        </el-form-item>
-        <el-form-item label="职业" prop="applicantOccupation">
-          <el-input v-model="adoptForm.applicantOccupation" placeholder="请输入您的职业" />
-        </el-form-item>
-        <el-form-item label="家庭地址" prop="applicantAddress">
-          <el-input v-model="adoptForm.applicantAddress" placeholder="请输入您的家庭地址" />
-        </el-form-item>
-        <el-form-item label="养宠经验" prop="applicantExperience">
-          <el-input
-            v-model="adoptForm.applicantExperience"
-            type="textarea"
-            :rows="3"
-            placeholder="请输入您的养宠经验"
-          />
-        </el-form-item>
-        <el-form-item label="申请信息" prop="applyInfo">
-          <el-input
-            v-model="adoptForm.applyInfo"
-            type="textarea"
-            :rows="4"
-            placeholder="请输入申请信息，说明您的领养意愿"
-          />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="adoptDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleSubmitAdopt">提交申请</el-button>
-      </template>
-    </el-dialog>
+    <div class="pagination-container">
+      <el-pagination
+        v-model:current-page="pagination.currentPage"
+        v-model:page-size="pagination.pageSize"
+        :page-sizes="[12, 24, 36]"
+        :total="pagination.total"
+        layout="prev, pager, next"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+      />
+    </div>
 
     <!-- 预约对话框 -->
-    <el-dialog
-      v-model="reserveDialogVisible"
-      title="预约看宠"
-      width="500px"
-    >
-      <el-form ref="reserveFormRef" :model="reserveForm" :rules="reserveRules" label-width="100px">
-        <el-form-item label="宠物名称">
-          <el-input v-model="currentPet.petName" disabled />
-        </el-form-item>
-        <el-form-item label="预约时间" prop="reserveTime">
-          <el-date-picker
-            v-model="reserveForm.reserveTime"
-            type="datetime"
-            placeholder="选择预约时间"
-            format="YYYY-MM-DD HH:mm:ss"
-            value-format="YYYY-MM-DDTHH:mm:ss"
-            style="width: 100%"
-          />
-        </el-form-item>
-        <el-form-item label="联系人" prop="contactPerson">
-          <el-input v-model="reserveForm.contactPerson" placeholder="请输入联系人姓名" />
-        </el-form-item>
-        <el-form-item label="联系电话" prop="contactPhone">
-          <el-input v-model="reserveForm.contactPhone" placeholder="请输入联系电话" />
-        </el-form-item>
-        <el-form-item label="备注" prop="reserveRemark">
-          <el-input
-            v-model="reserveForm.reserveRemark"
-            type="textarea"
-            :rows="3"
-            placeholder="请输入备注信息"
-          />
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <el-button @click="reserveDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleSubmitReserve">提交预约</el-button>
-      </template>
-    </el-dialog>
+    <ReserveDialog v-model="reserveDialogVisible" :pet-id="currentPet.petId" :pet-name="currentPet.petName" @success="loadData" />
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { getPetPage, submitAdoption, submitReservation } from '@/api/pet'
+import { getPetPage } from '@/api/pet'
 import { getBreedList } from '@/api/abandonedPet'
+import ReserveDialog from '@/components/ReserveDialog.vue'
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
 
 const store = useStore()
 const router = useRouter()
-
+const loading = ref(false)
 const breedList = ref([])
-const breedTypes = ['狗', '猫', '其他']
 
-const getBreedName = (breedId) => {
-  const breed = breedList.value.find(b => b.breedId === breedId)
-  if (breed) {
-    return breed.breedType + ' - ' + breed.breedName
-  }
-  return '未知品种'
-}
-
-const loadBreedList = async () => {
-  try {
-    const res = await getBreedList()
-    breedList.value = res.data
-  } catch (error) {
-    // 错误信息已在响应拦截器中处理
-  }
-}
-
-const searchForm = reactive({
-  adoptStatus: '待领养',
-  breedType: ''
-})
-
+const searchForm = reactive({ adoptStatus: '待领养', breedType: '' })
 const tableData = ref([])
-const pagination = reactive({
-  currentPage: 1,
-  pageSize: 12,
-  total: 0
-})
-
-const adoptDialogVisible = ref(false)
+const pagination = reactive({ currentPage: 1, pageSize: 12, total: 0 })
 const reserveDialogVisible = ref(false)
 const currentPet = ref({})
 
-const adoptFormRef = ref(null)
-const adoptForm = reactive({
-  applicantName: '',
-  applicantPhone: '',
-  applicantOccupation: '',
-  applicantAddress: '',
-  applicantExperience: '',
-  applyInfo: ''
-})
-
-const adoptRules = {
-  applicantName: [
-    { required: true, message: '请输入姓名', trigger: 'blur' }
-  ],
-  applicantPhone: [
-    { required: true, message: '请输入联系方式', trigger: 'blur' },
-    { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号码', trigger: 'blur' }
-  ],
-  applicantOccupation: [
-    { required: true, message: '请输入职业', trigger: 'blur' }
-  ],
-  applicantAddress: [
-    { required: true, message: '请输入家庭地址', trigger: 'blur' }
-  ],
-  applicantExperience: [
-    { required: true, message: '请输入养宠经验', trigger: 'blur' }
-  ],
-  applyInfo: [
-    { required: true, message: '请输入申请信息', trigger: 'blur' },
-    { min: 10, message: '申请信息不能少于10个字符', trigger: 'blur' }
-  ]
-}
-
-const reserveFormRef = ref(null)
-const reserveForm = reactive({
-  reserveTime: '',
-  contactPerson: '',
-  contactPhone: '',
-  reserveRemark: ''
-})
-
-const reserveRules = {
-  reserveTime: [
-    { required: true, message: '请选择预约时间', trigger: 'change' }
-  ],
-  contactPerson: [
-    { required: true, message: '请输入联系人姓名', trigger: 'blur' }
-  ],
-  contactPhone: [
-    { required: true, message: '请输入联系电话', trigger: 'blur' },
-    { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号码', trigger: 'blur' }
-  ]
-}
-
 const loadData = async () => {
+  loading.value = true
   try {
-    const res = await getPetPage({
-      current: pagination.currentPage,
-      size: pagination.pageSize,
-      adoptStatus: searchForm.adoptStatus,
-      breedType: searchForm.breedType
-    })
+    const res = await getPetPage({ current: pagination.currentPage, size: pagination.pageSize, adoptStatus: searchForm.adoptStatus, breedType: searchForm.breedType })
     tableData.value = res.data.records
     pagination.total = res.data.total
-  } catch (error) {
-    // 错误信息已在响应拦截器中处理
-  }
+  } catch (error) {} finally { loading.value = false }
 }
 
-const handleSearch = () => {
-  pagination.currentPage = 1
-  loadData()
-}
-
-const handleReset = () => {
-  searchForm.adoptStatus = '待领养'
-  searchForm.breedType = ''
-  handleSearch()
-}
-
-const handleViewDetail = (pet) => {
-  router.push(`/user/pet/${pet.petId}`)
-}
+const handleSearch = () => { pagination.currentPage = 1; loadData() }
+const handleReset = () => { searchForm.adoptStatus = '待领养'; searchForm.breedType = ''; handleSearch() }
+const handleViewDetail = (pet) => { router.push(`/user/pet/${pet.petId}`) }
 
 const handleAdopt = (pet) => {
-  currentPet.value = { ...pet }
-  adoptForm.applicantName = ''
-  adoptForm.applicantPhone = ''
-  adoptForm.applicantOccupation = ''
-  adoptForm.applicantAddress = ''
-  adoptForm.applicantExperience = ''
-  adoptForm.applyInfo = ''
-  adoptDialogVisible.value = true
+  router.push(`/user/adopt/${pet.petId}`)
 }
 
 const handleReserve = (pet) => {
   currentPet.value = { ...pet }
-  reserveForm.reserveTime = ''
-  reserveForm.contactPerson = ''
-  reserveForm.contactPhone = ''
-  reserveForm.reserveRemark = ''
   reserveDialogVisible.value = true
 }
 
-const handleSubmitAdopt = async () => {
-  if (!adoptFormRef.value) return
-  await adoptFormRef.value.validate(async (valid) => {
-    if (valid) {
-      try {
-        await submitAdoption({
-          userId: store.state.user.userId,
-          petId: currentPet.value.petId,
-          applicantName: adoptForm.applicantName,
-          applicantPhone: adoptForm.applicantPhone,
-          applicantOccupation: adoptForm.applicantOccupation,
-          applicantAddress: adoptForm.applicantAddress,
-          applicantExperience: adoptForm.applicantExperience,
-          applyInfo: adoptForm.applyInfo
-        })
-        ElMessage.success('领养申请提交成功，请等待审核')
-        adoptDialogVisible.value = false
-        loadData()
-      } catch (error) {
-        // 错误信息已在 request.js 的响应拦截器中处理
-      }
-    }
-  })
-}
+const handleSizeChange = (val) => { pagination.pageSize = val; loadData() }
+const handleCurrentChange = (val) => { pagination.currentPage = val; loadData() }
 
-const handleSubmitReserve = async () => {
-  if (!reserveFormRef.value) return
-  await reserveFormRef.value.validate(async (valid) => {
-    if (valid) {
-      try {
-        await submitReservation({
-          userId: store.state.user.userId,
-          petId: currentPet.value.petId,
-          reserveTime: reserveForm.reserveTime,
-          contactPerson: reserveForm.contactPerson,
-          contactPhone: reserveForm.contactPhone,
-          reserveRemark: reserveForm.reserveRemark
-        })
-        ElMessage.success('预约提交成功，请等待确认')
-        reserveDialogVisible.value = false
-        loadData()
-      } catch (error) {
-        // 错误信息已在 request.js 的响应拦截器中处理
-      }
-    }
-  })
-}
-
-const handleSizeChange = (val) => {
-  pagination.pageSize = val
-  loadData()
-}
-
-const handleCurrentChange = (val) => {
-  pagination.currentPage = val
-  loadData()
-}
-
-onMounted(() => {
-  loadBreedList()
-  loadData()
-})
+onMounted(() => { loadData() })
 </script>
 
 <style scoped lang="scss">
-.home-container {
-  padding: 20px;
+.home-container { min-height: 100%; }
 
-  .search-card {
-    margin-bottom: 20px;
+.hero-banner {
+  background: linear-gradient(135deg, #FF8A65, #FF6B35);
+  border-radius: 20px;
+  padding: 40px 36px 32px;
+  margin-bottom: 28px;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+
+  &::after {
+    content: '';
+    position: absolute;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+    top: -60px; right: -30px;
   }
 
-  .pet-list-card {
-    .card-header {
+  .hero-content {
+    position: relative;
+    z-index: 1;
+    margin-bottom: 24px;
+
+    h1 {
+      font-size: 28px;
+      font-weight: 800;
+      margin: 0 0 8px;
+      letter-spacing: -0.5px;
+    }
+    p { font-size: 15px; margin: 0; opacity: 0.9; }
+  }
+
+  .hero-filter {
+    display: flex;
+    gap: 12px;
+    position: relative;
+    z-index: 1;
+
+    :deep(.el-select) {
+      .el-input__wrapper {
+        background: rgba(255,255,255,0.2);
+        border: none;
+        box-shadow: none !important;
+        border-radius: 10px;
+        color: #fff;
+      }
+      .el-input__inner { color: #fff; }
+      .el-input__inner::placeholder { color: rgba(255,255,255,0.7); }
+      .el-select__caret { color: rgba(255,255,255,0.7); }
+    }
+
+    .filter-btn {
+      background: rgba(255,255,255,0.2);
+      border: none;
+      color: #fff;
+      border-radius: 10px;
+      &:hover { background: rgba(255,255,255,0.3); }
+    }
+  }
+}
+
+.pet-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  min-height: 200px;
+}
+
+.pet-card {
+  background: #fff;
+  border-radius: 16px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid #F3F4F6;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.08);
+    border-color: rgba(255,107,53,0.15);
+  }
+
+  .pet-image {
+    height: 200px;
+    overflow: hidden;
+    position: relative;
+
+    .el-image { width: 100%; height: 100%; }
+
+    .pet-badge {
+      position: absolute;
+      top: 12px; right: 12px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+
+      &.available { background: rgba(255,107,53,0.9); color: #fff; }
+      &.adopted { background: rgba(34,197,94,0.9); color: #fff; }
+    }
+  }
+
+  .pet-body {
+    padding: 16px 20px;
+
+    .pet-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-    }
+      margin-bottom: 10px;
 
-    .pet-card {
-      margin-bottom: 20px;
-
-      .pet-image {
-        height: 200px;
-        overflow: hidden;
-
-        .el-image {
-          width: 100%;
-          height: 100%;
-        }
-      }
-
-      .pet-info {
-        padding: 15px 0;
-
-        h3 {
-          font-size: 18px;
-          color: #333;
-          margin-bottom: 10px;
-        }
-
-        .pet-details {
-          p {
-            font-size: 14px;
-            color: #666;
-            margin: 5px 0;
-
-            .label {
-              color: #999;
-            }
-          }
-        }
-
-        .pet-status {
-          margin: 10px 0;
-        }
-
-        .pet-actions {
-          display: flex;
-          gap: 10px;
-          margin-top: 10px;
-
-          .el-button {
-            flex: 1;
-          }
-        }
+      h3 { font-size: 18px; font-weight: 700; color: #1F2937; margin: 0; }
+      .pet-type {
+        font-size: 12px;
+        padding: 2px 10px;
+        border-radius: 12px;
+        background: #FFF3E0;
+        color: #FF6B35;
+        font-weight: 600;
       }
     }
+
+    .pet-meta {
+      display: flex;
+      gap: 14px;
+      margin-bottom: 8px;
+      font-size: 13px;
+      color: #6B7280;
+
+      span { display: flex; align-items: center; gap: 4px; }
+      .el-icon { font-size: 14px; }
+      .health-良好 { color: #22C55E; font-weight: 600; }
+      .health-一般 { color: #F59E0B; font-weight: 600; }
+      .health-患病 { color: #EF4444; font-weight: 600; }
+    }
+
+    .pet-breed { font-size: 13px; color: #9CA3AF; }
   }
 
-  .pagination-container {
-    margin-top: 20px;
+  .pet-actions {
+    padding: 0 20px 16px;
     display: flex;
-    justify-content: center;
+    gap: 8px;
+
+    .action-btn {
+      flex: 1;
+      border-radius: 10px;
+      font-weight: 600;
+    }
+
+    .adopt-btn {
+      background: linear-gradient(135deg, #FF8A65, #FF6B35);
+      border: none;
+      &:hover { box-shadow: 0 4px 12px rgba(255,107,53,0.3); }
+    }
+
+    .reserve-btn {
+      background: #F3F4F6;
+      border: none;
+      color: #6B7280;
+      &:hover { background: #E5E7EB; color: #374151; }
+    }
   }
+}
+
+.pagination-container {
+  margin-top: 32px;
+  display: flex;
+  justify-content: center;
+
+  :deep(.el-pagination) {
+    .el-pager li.is-active {
+      background: linear-gradient(135deg, #FF8A65, #FF6B35);
+      border-radius: 8px;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .hero-banner {
+    padding: 28px 20px 24px;
+    .hero-content h1 { font-size: 22px; }
+    .hero-filter { flex-wrap: wrap; }
+  }
+  .pet-grid { grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
 }
 </style>

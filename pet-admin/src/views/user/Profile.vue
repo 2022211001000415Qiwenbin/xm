@@ -216,37 +216,56 @@ onMounted(() => {
 
 <style scoped lang="scss">
 .profile-container {
-  padding: 20px;
-  max-width: 600px;
+  max-width: 640px;
   margin: 0 auto;
 
+  .page-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: #1F2937;
+    margin: 0 0 24px;
+  }
+
   .user-info-card {
-    border-radius: 12px;
+    border-radius: 20px;
+    border: 1px solid #F3F4F6;
 
     .avatar-section {
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 20px 0 10px;
+      padding: 32px 0 16px;
+      position: relative;
+
+      &::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 100px;
+        background: linear-gradient(135deg, #FF8A65, #FF6B35);
+        border-radius: 20px 20px 0 0;
+        z-index: 0;
+      }
 
       .avatar-wrapper {
         position: relative;
         cursor: pointer;
         margin-bottom: 16px;
+        z-index: 1;
 
         .user-avatar {
-          border: 3px solid #409eff;
-          box-shadow: 0 4px 12px rgba(64, 158, 255, 0.3);
+          border: 4px solid #FF8A65;
+          box-shadow: 0 6px 20px rgba(255, 107, 53, 0.25);
         }
 
         .avatar-overlay {
           position: absolute;
-          top: 3px;
-          left: 3px;
+          top: 4px;
+          left: 4px;
           width: 100px;
           height: 100px;
           border-radius: 50%;
-          background: rgba(0, 0, 0, 0.5);
+          background: rgba(0, 0, 0, 0.45);
           display: flex;
           flex-direction: column;
           align-items: center;
@@ -256,43 +275,47 @@ onMounted(() => {
           transition: opacity 0.3s;
           font-size: 12px;
           gap: 4px;
+          backdrop-filter: blur(4px);
         }
 
-        &:hover .avatar-overlay {
-          opacity: 1;
-        }
+        &:hover .avatar-overlay { opacity: 1; }
       }
 
       .user-name {
         margin: 0 0 10px;
-        font-size: 22px;
-        color: #303133;
-        font-weight: 600;
+        font-size: 24px;
+        color: #1F2937;
+        font-weight: 700;
+        z-index: 1;
       }
     }
 
     .info-section {
       display: flex;
       flex-direction: column;
-      gap: 16px;
-      padding: 10px 0;
+      gap: 14px;
+      padding: 12px 0;
 
       .info-item {
         display: flex;
         align-items: center;
         gap: 16px;
+        padding: 8px 12px;
+        border-radius: 10px;
+        transition: background 0.2s;
+
+        &:hover { background: #FAFAF8; }
 
         .info-label {
-          color: #909399;
-          font-size: 16px;
-          min-width: 90px;
-          text-align: right;
+          color: #9CA3AF;
+          font-size: 14px;
+          min-width: 80px;
           flex-shrink: 0;
         }
 
         .info-value {
-          color: #303133;
-          font-size: 17px;
+          color: #374151;
+          font-size: 15px;
           font-weight: 500;
           word-break: break-all;
         }
@@ -303,6 +326,17 @@ onMounted(() => {
       display: flex;
       justify-content: center;
       padding-top: 20px;
+
+      .el-button {
+        border-radius: 12px;
+        font-weight: 600;
+        height: 44px;
+        padding: 0 32px;
+        background: linear-gradient(135deg, #FF8A65, #FF6B35);
+        border: none;
+
+        &:hover { box-shadow: 0 4px 16px rgba(255,107,53,0.35); }
+      }
     }
   }
 }

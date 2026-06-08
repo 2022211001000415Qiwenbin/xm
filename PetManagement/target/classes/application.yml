@@ -66,6 +66,22 @@ springdoc:
       paths-to-match: /**
       packages-to-scan: com.qwb.petmanage.controller
 
+# JWT配置
+jwt:
+  secret: PetManagePlatform2024SecretKeyForJwtTokenGenerationAndValidation
+  access-token-expiration: 7200000    # AccessToken有效期：2小时（毫秒）
+  refresh-token-expiration: 604800000  # RefreshToken有效期：7天（毫秒）
+
+# 阿里云OSS配置
+aliyun:
+  oss:
+    endpoint: oss-cn-hangzhou.aliyuncs.com
+    access-key-id: your-access-key-id
+    access-key-secret: your-access-key-secret
+    bucket-name: your-bucket-name
+    # 上传文件的前缀目录
+    prefix: pet-manage/
+
 # 日志配置
 logging:
   level:

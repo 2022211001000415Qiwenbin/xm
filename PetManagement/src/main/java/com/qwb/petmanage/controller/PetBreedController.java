@@ -1,7 +1,6 @@
 
 package com.qwb.petmanage.controller;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.qwb.petmanage.common.Result;
 import com.qwb.petmanage.entity.PetBreed;
@@ -27,16 +26,8 @@ public class PetBreedController {
                                         @RequestParam(defaultValue = "10") Integer size,
                                         @RequestParam(required = false) String breedName,
                                         @RequestParam(required = false) String breedType) {
-        Page<PetBreed> page = new Page<>(current, size);
-        QueryWrapper<PetBreed> queryWrapper = new QueryWrapper<>();
-        if (breedName != null && !breedName.isEmpty()) {
-            queryWrapper.like("breed_name", breedName);
-        }
-        if (breedType != null && !breedType.isEmpty()) {
-            queryWrapper.eq("breed_type", breedType);
-        }
-        queryWrapper.orderByDesc("create_time");
-        return Result.success(petBreedService.page(page, queryWrapper));
+        Page<PetBreed> page = petBreedService.pageList(current, size, breedName, breedType);
+        return Result.success(page);
     }
 
     /**
@@ -44,9 +35,7 @@ public class PetBreedController {
      */
     @GetMapping("/list")
     public Result<java.util.List<PetBreed>> list() {
-        QueryWrapper<PetBreed> queryWrapper = new QueryWrapper<>();
-        queryWrapper.orderByAsc("breed_type", "breed_name");
-        return Result.success(petBreedService.list(queryWrapper));
+        return Result.success(petBreedService.listAll());
     }
 
     /**
@@ -62,14 +51,8 @@ public class PetBreedController {
      */
     @PostMapping
     public Result<Integer> add(@RequestBody PetBreed petBreed) {
-        // 检查品种名称是否已存在
-        QueryWrapper<PetBreed> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("breed_name", petBreed.getBreedName());
-        if (petBreedService.count(queryWrapper) > 0) {
-            return Result.error("品种名称已存在");
-        }
-        petBreedService.save(petBreed);
-        return Result.success(petBreed.getBreedId());
+        Integer breedId = petBreedService.addBreed(petBreed);
+        return Result.success(breedId);
     }
 
     /**

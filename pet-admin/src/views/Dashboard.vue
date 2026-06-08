@@ -68,6 +68,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { Box, CircleCheck, Clock, Calendar } from '@element-plus/icons-vue'
 import { getDashboardStats, getRecentActivities } from '@/api/dashboard'
+import { getStatusTagType } from '@/utils/format'
 
 const router = useRouter()
 
@@ -84,15 +85,7 @@ const navigateTo = (path) => {
 
 const recentActivities = ref([])
 
-const getActivityType = (type) => {
-  const typeMap = {
-    '领养': 'success',
-    '预约': 'warning',
-    '申请': 'info',
-    '登记': 'primary'
-  }
-  return typeMap[type] || ''
-}
+const getActivityType = (type) => getStatusTagType(type, 'activity')
 
 const loadStats = async () => {
   try {

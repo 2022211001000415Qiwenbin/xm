@@ -25,6 +25,18 @@ export function logout() {
 }
 
 /**
+ * 刷新Token
+ * @param {string} refreshToken - 刷新令牌
+ */
+export function refreshTokenApi(refreshToken) {
+  return request({
+    url: '/auth/refresh',
+    method: 'post',
+    data: { refreshToken }
+  })
+}
+
+/**
  * 获取用户信息
  */
 export function getUserInfo() {

@@ -56,8 +56,8 @@
       </div>
     </el-card>
 
-    <div style="margin-top: 20px">
-      <el-button @click="$router.back()">返回列表</el-button>
+    <div class="back-btn" @click="$router.back()">
+      <el-icon><ArrowLeft /></el-icon>返回列表
     </div>
   </div>
 </template>
@@ -122,23 +122,48 @@ onMounted(() => {
 
 <style scoped lang="scss">
 .knowledge-detail-container {
-  padding: 20px;
+
+  .back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 10px;
+    background: #fff;
+    border: 1px solid #E5E7EB;
+    color: #6B7280;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 20px;
+
+    &:hover {
+      color: #FF6B35;
+      border-color: rgba(255,107,53,0.3);
+      background: rgba(255,107,53,0.04);
+    }
+  }
 
   .detail-card {
-    margin-bottom: 20px;
+    margin-bottom: 24px;
+    border-radius: 20px;
+    border: 1px solid #F3F4F6;
 
     .detail-header {
       .detail-title {
         margin: 0 0 16px;
-        font-size: 24px;
-        color: #303133;
+        font-size: 26px;
+        color: #1F2937;
+        font-weight: 800;
+        line-height: 1.4;
       }
 
       .detail-meta {
         display: flex;
         align-items: center;
-        gap: 16px;
-        color: #909399;
+        gap: 18px;
+        color: #9CA3AF;
         font-size: 13px;
 
         span {
@@ -146,36 +171,60 @@ onMounted(() => {
           align-items: center;
           gap: 4px;
         }
+
+        .el-tag { border-radius: 8px; }
       }
     }
 
     .detail-content {
       line-height: 2;
       font-size: 15px;
-      color: #303133;
+      color: #374151;
       white-space: pre-wrap;
+      padding: 8px 0;
     }
   }
 
   .comment-card {
+    border-radius: 20px;
+    border: 1px solid #F3F4F6;
+
     .comment-header {
-      font-size: 16px;
-      font-weight: 600;
+      font-size: 18px;
+      font-weight: 700;
+      color: #1F2937;
     }
 
     .comment-form {
-      margin-bottom: 24px;
+      margin-bottom: 28px;
+
+      :deep(.el-textarea__inner) {
+        border-radius: 12px;
+      }
+
+      :deep(.el-button--primary) {
+        background: linear-gradient(135deg, #FF8A65, #FF6B35);
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+      }
     }
 
     .comment-list {
       .comment-item {
         display: flex;
-        gap: 12px;
-        padding: 16px 0;
-        border-bottom: 1px solid #f0f0f0;
+        gap: 14px;
+        padding: 18px 0;
+        border-bottom: 1px solid #F3F4F6;
 
-        &:last-child {
-          border-bottom: none;
+        &:last-child { border-bottom: none; }
+
+        .comment-avatar {
+          flex-shrink: 0;
+
+          .el-avatar {
+            border: 2px solid #FFD5C0;
+          }
         }
 
         .comment-body {
@@ -188,22 +237,22 @@ onMounted(() => {
             margin-bottom: 8px;
 
             .comment-user {
-              font-weight: 600;
-              color: #303133;
+              font-weight: 700;
+              color: #374151;
               font-size: 14px;
             }
 
             .comment-time {
-              color: #c0c4cc;
+              color: #D1D5DB;
               font-size: 12px;
             }
           }
 
           .comment-text {
             margin: 0;
-            color: #606266;
+            color: #4B5563;
             font-size: 14px;
-            line-height: 1.6;
+            line-height: 1.7;
           }
         }
       }

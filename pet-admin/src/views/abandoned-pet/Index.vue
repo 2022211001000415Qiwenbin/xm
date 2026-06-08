@@ -188,7 +188,8 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
-import { getPetPage, deletePet, addPet, updatePet, getBreedList, addBreed } from '@/api/abandonedPet'
+import { deletePet, addPet, updatePet, getBreedList, addBreed } from '@/api/abandonedPet'
+import { getPetPage } from '@/api/pet'
 
 const uploadUrl = ref('/api/upload')
 

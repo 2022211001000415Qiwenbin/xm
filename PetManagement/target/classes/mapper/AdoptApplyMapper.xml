@@ -28,6 +28,12 @@
         <if test="realName != null and realName != ''">
             AND u.real_name LIKE CONCAT('%', #{realName}, '%')
         </if>
+        <if test="userId != null">
+            AND a.user_id = #{userId}
+        </if>
+        <if test="petId != null">
+            AND a.pet_id = #{petId}
+        </if>
         ORDER BY a.apply_time DESC
     </select>
 

@@ -14,5 +14,7 @@ public interface AdoptApplyMapper extends BaseMapper<AdoptApply> {
 
     List<AdoptApply> selectApplyPage(Page<AdoptApply> page,
                                      @Param("auditStatus") String auditStatus,
-                                     @Param("realName") String realName);
+                                     @Param("realName") String realName,
+                                     @Param("userId") Long userId,
+                                     @Param("petId") Long petId);
 }

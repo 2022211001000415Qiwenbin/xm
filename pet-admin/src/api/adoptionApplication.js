@@ -100,17 +100,4 @@ export function cancelAdoptionApplication(id) {
   })
 }
 
-/**
- * 添加回访记录
- * @param {Object} data - 回访信息
- * @param {number} data.applicationId - 申请ID
- * @param {string} data.content - 回访内容
- * @param {string} data.visitTime - 回访时间
- */
-export function addReturnVisit(data) {
-  return request({
-    url: '/adoption-application/return-visit',
-    method: 'post',
-    data
-  })
-}
+

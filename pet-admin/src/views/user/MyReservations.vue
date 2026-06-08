@@ -117,7 +117,8 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useStore } from 'vuex'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getMyReservations, cancelReservation } from '@/api/pet'
+import { getAppointmentPage, cancelAppointment } from '@/api/appointment'
+import { formatDateTime, getStatusTagType } from '@/utils/format'
 
 const store = useStore()
 
@@ -135,31 +136,11 @@ const pagination = reactive({
 const detailDialogVisible = ref(false)
 const currentReservation = ref({})
 
-const getStatusType = (status) => {
-  const typeMap = {
-    '待确认': 'warning',
-    '已确认': 'success',
-    '已取消': 'info',
-    '已完成': 'primary'
-  }
-  return typeMap[status] || ''
-}
-
-const formatDateTime = (dateTime) => {
-  if (!dateTime) return ''
-  const date = new Date(dateTime)
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, '0')
-  const day = String(date.getDate()).padStart(2, '0')
-  const hours = String(date.getHours()).padStart(2, '0')
-  const minutes = String(date.getMinutes()).padStart(2, '0')
-  const seconds = String(date.getSeconds()).padStart(2, '0')
-  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
-}
+const getStatusType = (status) => getStatusTagType(status, 'reservation')
 
 const loadData = async () => {
   try {
-    const res = await getMyReservations({
+    const res = await getAppointmentPage({
       current: pagination.currentPage,
       size: pagination.pageSize,
       reserveStatus: searchForm.status,
@@ -194,7 +175,7 @@ const handleCancel = async (row) => {
       cancelButtonText: '取消',
       type: 'warning'
     })
-    await cancelReservation({
+    await cancelAppointment({
       id: row.reserveId,
       cancelReason: '用户主动取消',
       cancelPerson: store.state.user.realName || '用户'
@@ -223,27 +204,48 @@ onMounted(() => {
 
 <style scoped lang="scss">
 .my-reservations-container {
-  padding: 20px;
+
+  .page-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: #1F2937;
+    margin: 0 0 24px;
+  }
 
   .search-card {
-    margin-bottom: 20px;
+    margin-bottom: 24px;
+    border-radius: 16px;
+    border: 1px solid #F3F4F6;
+
+    :deep(.el-card__body) { padding: 16px 20px; }
+    :deep(.el-select .el-input__wrapper) { border-radius: 10px; }
+    :deep(.el-button--primary) {
+      background: linear-gradient(135deg, #FF8A65, #FF6B35);
+      border: none;
+      border-radius: 10px;
+    }
+    :deep(.el-button--default) { border-radius: 10px; }
   }
 
   .list-card {
+    border-radius: 16px;
+    border: 1px solid #F3F4F6;
+
     .card-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      font-size: 18px;
+      font-weight: 700;
+      color: #1F2937;
     }
 
-    .empty-tip {
-      padding: 40px 0;
-    }
+    .empty-tip { padding: 40px 0; }
 
     .reservation-list {
       display: flex;
       flex-direction: column;
-      gap: 16px;
+      gap: 14px;
     }
 
     .reservation-item {
@@ -251,39 +253,39 @@ onMounted(() => {
       flex-direction: column;
       gap: 12px;
       padding: 20px 24px;
-      background: #fafafa;
-      border-radius: 8px;
-      border: 1px solid #ebeef5;
-      transition: all 0.3s;
+      background: #FAFAF8;
+      border-radius: 14px;
+      border: 1px solid #F3F4F6;
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 
       &:hover {
-        background: #f0f7ff;
-        border-color: #d0e3ff;
-        box-shadow: 0 2px 8px rgba(64, 158, 255, 0.1);
+        background: #FFF8F0;
+        border-color: rgba(255,107,53,0.2);
+        box-shadow: 0 4px 16px rgba(255,107,53,0.08);
       }
 
       .item-fields-row {
-        display: flex;
-        flex-direction: column;
-        gap: 14px;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 10px 24px;
       }
 
       .item-field {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 10px;
 
         .field-label {
-          color: #909399;
-          font-size: 16px;
+          color: #9CA3AF;
+          font-size: 13px;
           white-space: nowrap;
-          min-width: 90px;
-          text-align: right;
+          min-width: 70px;
+          flex-shrink: 0;
         }
 
         .field-value {
-          color: #303133;
-          font-size: 17px;
+          color: #374151;
+          font-size: 14px;
           font-weight: 500;
           overflow: hidden;
           text-overflow: ellipsis;
@@ -294,15 +296,22 @@ onMounted(() => {
       .item-actions {
         display: flex;
         justify-content: flex-end;
-        padding-top: 10px;
-        border-top: 1px dashed #e4e7ed;
+        padding-top: 12px;
+        border-top: 1px dashed #E5E7EB;
+
+        .el-button { border-radius: 10px; font-weight: 600; }
       }
     }
 
     .pagination-container {
-      margin-top: 20px;
+      margin-top: 24px;
       display: flex;
-      justify-content: flex-end;
+      justify-content: center;
+
+      :deep(.el-pager li.is-active) {
+        background: linear-gradient(135deg, #FF8A65, #FF6B35);
+        border-radius: 8px;
+      }
     }
   }
 }
